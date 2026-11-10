@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión - TruequeUni</title>
-    <link rel="stylesheet" href="estilos.css">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 50px; }
+        .contenedor-form { background-color: white; padding: 30px; max-width: 400px; margin: 0 auto; border: 1px solid #ccc; }
+        h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 15px; color: #555; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #004d40; color: white; border: none; margin-top: 20px; cursor: pointer; font-size: 16px; }
+        .registro-link { text-align: center; margin-top: 15px; font-size: 14px; }
+        a { color: #004d40; }
+    </style>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="logo">TruequeUni</a>
-        <nav>
-            <a href="registro.html" class="btn-publicar">Registrarse</a>
-        </nav>
-    </header>
-
-    <div class="container">
-        <div class="form-container">
-            <h2>Bienvenido a TruequeUni</h2>
-            <form action="catalogo.html">
-                <div class="form-group">
-                    <label>Correo electrónico:</label>
-                    <input type="email" placeholder="ejemplo@uam.edu.co" required>
-                </div>
-                <div class="form-group">
-                    <label>Contraseña:</label>
-                    <input type="password" placeholder="********" required>
-                </div>
-                <button type="submit" class="btn-primary">Ingresar</button>
-            </form>
+    <div class="contenedor-form">
+        <h2>Iniciar Sesión</h2>
+        <!-- FORMULARIO MODIFICADO: Ahora pide Nombre/Alias -->
+        <form action="catalogo.html">
+            <label>Nombre o Alias registrado:</label>
+            <input type="text" placeholder="Ej: Sofía López o SofLop22">
+            
+            <label>Contraseña:</label>
+            <input type="password" placeholder="********">
+            
+            <button type="submit">Entrar</button>
+        </form>
+        <div class="registro-link">
+            ¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a>
         </div>
     </div>
 </body>
