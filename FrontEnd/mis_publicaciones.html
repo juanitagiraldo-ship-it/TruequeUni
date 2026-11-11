@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Publicaciones - TruequeUni</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        header { background-color: #004d40; color: white; padding: 15px; margin-bottom: 30px; }
+        header a { color: white; text-decoration: none; margin-right: 15px; }
+        table { width: 100%; border-collapse: collapse; background-color: white; }
+        th, td { border: 1px solid #ccc; padding: 12px; text-align: left; }
+        th { background-color: #eee; }
+        .btn { padding: 5px 10px; border: none; cursor: pointer; }
+        .btn-editar { background-color: #ccc; }
+        .btn-eliminar { background-color: #004d40; color: white; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="catalogo.html">&larr; Volver al catálogo</a>
+    </header>
+
+    <h2>Gestión de Inventario</h2>
+    <table>
+        <tr>
+            <th>Artículo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+        <tr>
+            <td>Cálculo Diferencial</td>
+            <td>Activo</td>
+            <td>
+                <button class="btn btn-editar">Editar</button>
+                <button class="btn btn-eliminar">Eliminar</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Calculadora Científica</td>
+            <td>Pausado</td>
+            <td>
+                <button class="btn btn-editar">Editar</button>
+                <button class="btn btn-eliminar">Eliminar</button>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

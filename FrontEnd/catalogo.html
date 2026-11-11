@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Catálogo - TruequeUni</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        header { background-color: #004d40; color: white; padding: 15px; display: flex; justify-content: space-between; }
+        header a { color: white; text-decoration: none; margin-left: 15px; }
+        .barra-busqueda { margin: 20px 0; }
+        .barra-busqueda input { padding: 10px; width: 300px; border: 1px solid #ccc; }
+        .barra-busqueda button { padding: 10px 20px; background-color: #004d40; color: white; border: none; }
+        
+        .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+        .tarjeta { background-color: #056353; border: 1px solid rgb(0, 0, 0); width: 250px; padding: 15px; }
+        .tarjeta img { width: 100%; height: 150px; background-color: #dddddd; object-fit: cover; }
+        .etiqueta { background-color: #004d40; padding: 5px; font-size: 15px; display: inline-block; margin-top: 10px; }
+        .titulo-articulo { font-size: 18px; font-weight: bold; margin: 10px 0 5px 0; }
+        .info-usuario { font-size: 14px; color: rgb(0, 0, 0); }
+    </style>
+</head>
+<body>
+    <header>
+        <div><strong>TruequeUni</strong></div>
+        <nav>
+            <a href="catalogo.html">Catálogo</a>
+            <a href="mis_publicaciones.html">Mis Publicaciones</a>
+            <a href="perfil.html">Mi Perfil</a>
+            <a href="publicar.html">+ Publicar</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Encuentra un artículo</h2>
+        <div class="barra-busqueda">
+            <input type="text" placeholder="Buscar por palabra clave...">
+            <button>Buscar</button>
+        </div>
+
+        <div class="grid">
+            <!-- Tarjeta 1 -->
+            <div class="tarjeta">
+                <img src="https://via.placeholder.com/250x150?text=Libro" alt="Libro">
+                <span class="etiqueta">Buen estado</span>
+                <div class="titulo-articulo">Cálculo Diferencial</div>
+                <div class="info-usuario">Alexandra (Ing. Sistemas)</div>
+                <div class="info-usuario">⭐⭐⭐⭐⭐ 4.9</div>
+                <a href="chat.html" style="display:block; text-align:center; background-color:#000000; color:white; padding:8px; text-decoration:none; margin-top:10px;">Contactar</a>
+            </div>
+
+            <!-- Tarjeta 2 -->
+            <div class="tarjeta">
+                <img src="https://via.placeholder.com/250x150?text=Calculadora" alt="Calculadora">
+                <span class="etiqueta">Nuevo</span>
+                <div class="titulo-articulo">Calculadora Científica</div>
+                <div class="info-usuario">JuanMi O (Ing. Industrial)</div>
+                <div class="info-usuario">Usuario nuevo</div>
+                <a href="chat.html" style="display:block; text-align:center; background-color:#000000; color:white; padding:8px; text-decoration:none; margin-top:10px;">Contactar</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

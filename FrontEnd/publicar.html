@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Publicar Artículo - TruequeUni</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        header { background-color: #004d40; color: white; padding: 15px; margin-bottom: 30px; }
+        header a { color: white; text-decoration: none; margin-right: 15px; }
+        .formulario { background-color: white; border: 1px solid #035c193c; padding: 30px; max-width: 500px; margin: 0 auto; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #004d40; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #035c193c; box-sizing: border-box; }
+        button { background-color: #004d40; color: white; padding: 12px; border: none; width: 100%; margin-top: 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="catalogo.html"> &larr; Volver al catálogo</a>
+    </header>
+
+    <div class="formulario">
+        <h2>Publicar un Artículo</h2>
+        <form action="catalogo.html">
+            <label>Título del artículo:</label>
+            <input type="text" placeholder="Ej: Libro de Física">
+
+            <label>Categoría:</label>
+            <select>
+                <option>Seleccione...</option>
+                <option>Libros</option>
+                <option>Ropa</option>
+                <option>Tecnología</option>
+                <option>Artículos para el hogar</option>
+            </select>
+
+            <label>Estado físico:</label>
+            <select>
+                <option>Seleccione...</option>
+                <option>Nuevo</option>
+                <option>Buen estado</option>
+                <option>Usado</option>
+            </select>
+
+            <label>Descripción:</label>
+            <textarea rows="4" placeholder="Describe el artículo..."></textarea>
+
+            <label>Fotografía:</label>
+            <input type="file">
+
+            <button type="submit">Publicar</button>
+        </form>
+    </div>
+</body>
+</html>
