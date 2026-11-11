@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Bienvenido a TruequeUni</title>
     <style>
-        /* Estilos basados en el banner oficial */
         body {
             background-color: #004d40; /* Verde oscuro del banner */
             font-family: Arial, sans-serif;
@@ -13,6 +12,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            color: white;
         }
 
         .contenedor-bienvenida {
@@ -25,13 +25,13 @@
 
         .texto-izquierda {
             width: 50%;
-            color: white;
         }
 
         .texto-izquierda h1 {
             font-size: 48px;
             margin-bottom: 20px;
             line-height: 1.2;
+            color: white;
         }
 
         .texto-izquierda p {
@@ -67,18 +67,19 @@
     </style>
 </head>
 <body>
-    <header>
-        <a href="index.html" class="logo">TruequeUni</a>
-        <nav>
-            <a href="login.html">Iniciar Sesión</a>
-            <a href="registro.html" class="btn-publicar">Registrarse</a>
-        </nav>
-    </header>
 
-    <div class="container" style="text-align: center; margin-top: 100px;">
-        <h1 style="font-size: 48px; color: #1a1a1a;">Compartir nos conecta</h1>
-        <p style="font-size: 20px; color: #666; margin-top: 20px;">Encuentra materiales de estudio o ropa en tu campus.</p>
-        <a href="login.html" class="btn-primary" style="display: inline-block; width: 250px; margin-top: 40px; text-decoration: none;">Comenzar ahora</a>
+    <div class="contenedor-bienvenida">
+        <div class="texto-izquierda">
+            <h1>Compartir<br>nos conecta</h1>
+            <p>"Encuentra materiales de estudio o ropa en tu campus"</p>
+            <a href="login.html" class="boton-ingresar">Comenzar ahora</a>
+        </div>
+
+        <div class="imagen-derecha">
+            <!-- Asegúrate de que la imagen se llame logo.png -->
+            <img src="logo.png" alt="Logotipo de TruequeUni">
+        </div>
     </div>
+
 </body>
 </html>
