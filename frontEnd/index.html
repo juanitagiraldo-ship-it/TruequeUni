@@ -2,85 +2,47 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Bienvenido a TruequeUni</title>
+    <title>TruequeUni - Bienvenida</title>
     <style>
         body {
-            background-color: #004d40;
+            background-color: #004d40; /* Verde oscuro del banner */
             font-family: Arial, sans-serif;
             margin: 0;
-            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        .contenedor-bienvenida {
-            display: flex;
-            width: 80%;
-            max-width: 900px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .texto-izquierda {
-            width: 50%;
+            height: 100vh;
             color: white;
-        }
-
-        .texto-izquierda h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-
-        .texto-izquierda p {
-            font-size: 20px;
-            margin-bottom: 30px;
-            color: #e0e0e0;
-        }
-
-        .boton-ingresar {
-            background-color: white;
-            color: #004d40;
-            padding: 12px 30px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-
-        .boton-ingresar:hover {
-            background-color: #e0e0e0;
-        }
-
-        .imagen-derecha {
-            width: 40%;
             text-align: center;
         }
-
-        .imagen-derecha img {
-            width: 100%;
-            max-width: 400px;
+        .bienvenida {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            color: #333;
+            width: 80%;
+            max-width: 600px;
+        }
+        h1 { color: #004d40; }
+        p { color: #555; font-size: 18px; }
+        .boton {
+            display: inline-block;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-
-    <div class="contenedor-bienvenida">
-        <!-- Texto de la izquierda -->
-        <div class="texto-izquierda">
-            <h1>Compartir<br>nos conecta</h1>
-            <p>"Encuentra materiales de estudio o ropa en tu campus"</p>
-            <a href="login.html" class="boton-ingresar">Comenzar ahora</a>
-        </div>
-
-    
-        <div class="imagen-derecha">
-            <!-- Asegúrate de que la imagen esté en la misma carpeta -->
-            <img src="logo.png" alt="Logotipo de TruequeUni">
-        </div>
+    <div class="bienvenida">
+        <h1>Compartir nos conecta</h1>
+        <p>"Encuentra materiales de estudio o ropa en tu campus"</p>
+        <!-- Aquí podrías poner la imagen del monitor con el logo si la tienes recortada -->
+        <a href="login.html" class="boton">Ingresar a la Plataforma</a>
     </div>
-
 </body>
 </html>
