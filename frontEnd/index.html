@@ -2,47 +2,23 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TruequeUni - Bienvenida</title>
-    <style>
-        body {
-            background-color: #004d40; /* Verde oscuro del banner */
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-            text-align: center;
-        }
-        .bienvenida {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            color: #333;
-            width: 80%;
-            max-width: 600px;
-        }
-        h1 { color: #004d40; }
-        p { color: #555; font-size: 18px; }
-        .boton {
-            display: inline-block;
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruequeUni - Inicio</title>
+    <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-    <div class="bienvenida">
-        <h1>Compartir nos conecta</h1>
-        <p>"Encuentra materiales de estudio o ropa en tu campus"</p>
-        <!-- Aquí podrías poner la imagen del monitor con el logo si la tienes recortada -->
-        <a href="login.html" class="boton">Ingresar a la Plataforma</a>
+    <header>
+        <a href="index.html" class="logo">TruequeUni</a>
+        <nav>
+            <a href="login.html">Iniciar Sesión</a>
+            <a href="registro.html" class="btn-publicar">Registrarse</a>
+        </nav>
+    </header>
+
+    <div class="container" style="text-align: center; margin-top: 100px;">
+        <h1 style="font-size: 48px; color: #1a1a1a;">Compartir nos conecta</h1>
+        <p style="font-size: 20px; color: #666; margin-top: 20px;">Encuentra materiales de estudio o ropa en tu campus.</p>
+        <a href="login.html" class="btn-primary" style="display: inline-block; width: 250px; margin-top: 40px; text-decoration: none;">Comenzar ahora</a>
     </div>
 </body>
 </html>
