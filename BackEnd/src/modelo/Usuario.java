@@ -20,7 +20,7 @@ public class Usuario {
         this.reputacion = reputacion;
     }
 
-    // Getters y Setters
+
     public int getIdUsuario() {
         return idUsuario;
     }
