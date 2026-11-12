@@ -10,6 +10,43 @@ import conexion.Conexion;
 
 public class UsuarioController {
 
+
+    // Metodo para validar el inicio de sesion
+    public boolean validarInicioSesion(String nombreAlias, String contrasena) {
+
+        String sql = "SELECT * FROM usuarios WHERE nombre_alias = ? AND contrasena = ?";
+
+        try (Connection conexion = Conexion.conectar()) {
+
+            if (conexion == null) {
+                System.out.println("No se pudo conectar con MySQL");
+                return false;
+            }
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+
+                consulta.setString(1, nombreAlias);
+                consulta.setString(2, contrasena);
+
+                try (ResultSet resultado = consulta.executeQuery()) {
+
+                    if (resultado.next()) {
+                        System.out.println("Inicio de sesion correcto");
+                        return true;
+                    }
+
+                    System.out.println("Usuario o contraseña incorrectos");
+                    return false;
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al validar el usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+
     // Metodo para registrar un usuario
     public boolean registrarUsuario(Usuario usuario) {
 
