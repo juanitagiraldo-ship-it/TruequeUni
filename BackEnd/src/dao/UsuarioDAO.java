@@ -1,13 +1,14 @@
-
 package dao;
 
 import conexion.Conexion;
+import modelo.Usuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UsuarioDAO {
+
 
     public boolean validarCredenciales(String nombreAlias, String contrasena) {
 
@@ -31,6 +32,34 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             System.out.println("Error al validar el usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+    
+    public boolean registrarUsuario(Usuario usuario) {
+
+        String sql = "INSERT INTO usuarios (nombre_alias, contrasena, programa, rol, reputacion) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conexion = Conexion.conectar()) {
+
+            if (conexion == null) {
+                return false;
+            }
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+
+                consulta.setString(1, usuario.getNombreAlias());
+                consulta.setString(2, usuario.getContrasena());
+                consulta.setString(3, usuario.getPrograma());
+                consulta.setString(4, usuario.getRol());
+                consulta.setDouble(5, usuario.getReputacion());
+
+                return consulta.executeUpdate() > 0;
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al registrar usuario: " + e.getMessage());
             return false;
         }
     }
