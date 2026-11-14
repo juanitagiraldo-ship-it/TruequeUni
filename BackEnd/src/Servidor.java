@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import controlador.UsuarioController;
 import modelo.Usuario;
 import controlador.Login;
+import controlador.Registro;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -94,6 +95,7 @@ public class Servidor {
     }
 
     // Metodo para registrar usuarios
+  // Metodo para registrar usuarios
     private static void registrarUsuario(HttpExchange intercambio)
             throws IOException {
 
@@ -108,30 +110,18 @@ public class Servidor {
             String nombre = formulario.get("nombre");
             String contrasena = formulario.get("contrasena");
 
-            if (nombre == null || nombre.trim().isEmpty() ||
-                contrasena == null || contrasena.trim().isEmpty()) {
+            Registro registro = new Registro();
 
-                responder(intercambio, 400, "Completa todos los campos");
-                return;
-            }
+            String mensaje = registro.registrarUsuario(nombre, contrasena);
 
-            Usuario usuario = new Usuario(
-                0,
-                nombre.trim(),
-                contrasena,
-                "",
-                "estudiante",
-                5.0
-            );
+            if (mensaje.equals("Usuario registrado correctamente.")) {
+                responder(intercambio, 200, mensaje);
 
-            UsuarioController controlador = new UsuarioController();
+            } else if (mensaje.equals("Por favor completa todos los campos.")) {
+                responder(intercambio, 400, mensaje);
 
-            if (controlador.registrarUsuario(usuario)) {
-                responder(intercambio, 200,
-                    "Usuario registrado correctamente");
             } else {
-                responder(intercambio, 500,
-                    "No se pudo registrar el usuario");
+                responder(intercambio, 500, mensaje);
             }
 
         } catch (Exception e) {

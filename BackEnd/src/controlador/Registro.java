@@ -13,10 +13,10 @@ public class Registro {
 
     public String registrarUsuario(String nombre, String contrasena) {
 
-        if (nombre == null  nombre.trim().isEmpty()
-                 contrasena == null || contrasena.trim().isEmpty()) {
-            return "Por favor completa todos los campos.";
-        }
+       if (nombre == null || nombre.trim().isEmpty()
+        || contrasena == null || contrasena.trim().isEmpty()) {
+        return "Por favor completa todos los campos.";
+}
 
         Usuario usuario = new Usuario(
             0,
