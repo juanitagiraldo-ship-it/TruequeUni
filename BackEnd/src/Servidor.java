@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import controlador.UsuarioController;
 import modelo.Usuario;
+import controlador.Login;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -140,46 +141,42 @@ public class Servidor {
     }
 
     // Metodo para iniciar sesion
-    private static void iniciarSesion(HttpExchange intercambio)
-            throws IOException {
+    
+private static void iniciarSesion(HttpExchange intercambio)
+        throws IOException {
 
-        if (!intercambio.getRequestMethod().equalsIgnoreCase("POST")) {
-            responder(intercambio, 405, "Metodo no permitido");
-            return;
-        }
-
-        try {
-            Map<String, String> formulario = obtenerDatosFormulario(intercambio);
-
-            String nombre = formulario.get("nombre");
-            String contrasena = formulario.get("contrasena");
-
-            if (nombre == null || nombre.trim().isEmpty() ||
-                contrasena == null || contrasena.isEmpty()) {
-
-                responder(intercambio, 400, "Completa todos los campos");
-                return;
-            }
-
-            UsuarioController controlador = new UsuarioController();
-
-            boolean valido = controlador.validarInicioSesion(
-                nombre.trim(),
-                contrasena
-            );
-
-            if (valido) {
-                responder(intercambio, 200, "Inicio de sesion correcto");
-            } else {
-                responder(intercambio, 401,
-                    "Usuario o contraseña incorrectos");
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error al iniciar sesion: " + e.getMessage());
-            responder(intercambio, 500, "Error al procesar el inicio de sesion");
-        }
+    if (!intercambio.getRequestMethod().equalsIgnoreCase("POST")) {
+        responder(intercambio, 405, "Metodo no permitido");
+        return;
     }
+
+    try {
+        Map<String, String> formulario = obtenerDatosFormulario(intercambio);
+
+        String nombre = formulario.get("nombre");
+        String contrasena = formulario.get("contrasena");
+
+        Login login = new Login();
+
+        String mensaje = login.iniciarSesion(nombre, contrasena);
+
+        if (mensaje.equals("Inicio de sesión exitoso.")) {
+            responder(intercambio, 200, mensaje);
+
+        } else if (mensaje.equals("Por favor, ingresa tu nombre de usuario.")
+                || mensaje.equals("Por favor, ingresa tu contraseña.")) {
+            responder(intercambio, 400, mensaje);
+
+        } else {
+            responder(intercambio, 401, mensaje);
+        }
+
+    } catch (Exception e) {
+        System.out.println("Error al iniciar sesion: " + e.getMessage());
+        responder(intercambio, 500, "Error al procesar el inicio de sesion");
+    }
+}
+
 
     // Metodo para obtener los datos enviados por los formularios
     private static Map<String, String> obtenerDatosFormulario(
