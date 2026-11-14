@@ -21,9 +21,11 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Servidor {
-
+    private static final Map<String, Usuario> sesiones = new ConcurrentHashMap<>();
     public static void main(String[] args) {
 
         try {
@@ -55,6 +57,22 @@ public class Servidor {
 
             System.out.println("Servidor iniciado correctamente");
             System.out.println("Direccion: http://localhost:8080");
+
+            servidor.createContext("/api/sesion", intercambio -> {
+
+    Usuario usuario = obtenerUsuarioSesion(intercambio);
+
+    if (usuario != null) {
+
+        responder(intercambio, 200,
+                "Sesion activa. Usuario: " + usuario.getNombreAlias()
+                + " | ID: " + usuario.getIdUsuario());
+
+    } else {
+
+        responder(intercambio, 401, "No hay una sesion activa.");
+    }
+});
 
         } catch (IOException e) {
             System.out.println("Error al iniciar el servidor: " + e.getMessage());
@@ -144,7 +162,7 @@ public class Servidor {
 
     // Metodo para iniciar sesion
     
-private static void iniciarSesion(HttpExchange intercambio)
+   private static void iniciarSesion(HttpExchange intercambio)
         throws IOException {
 
     if (!intercambio.getRequestMethod().equalsIgnoreCase("POST")) {
@@ -158,19 +176,33 @@ private static void iniciarSesion(HttpExchange intercambio)
         String nombre = formulario.get("nombre");
         String contrasena = formulario.get("contrasena");
 
+        if (nombre == null || nombre.trim().isEmpty()
+                || contrasena == null || contrasena.trim().isEmpty()) {
+
+            responder(intercambio, 400, "Por favor completa todos los campos.");
+            return;
+        }
+
         Login login = new Login();
 
-        String mensaje = login.iniciarSesion(nombre, contrasena);
+        Usuario usuario = login.iniciarSesion(nombre, contrasena);
 
-        if (mensaje.equals("Inicio de sesión exitoso.")) {
-            responder(intercambio, 200, mensaje);
+        if (usuario != null) {
 
-        } else if (mensaje.equals("Por favor, ingresa tu nombre de usuario.")
-                || mensaje.equals("Por favor, ingresa tu contraseña.")) {
-            responder(intercambio, 400, mensaje);
+            String token = UUID.randomUUID().toString();
+
+            sesiones.put(token, usuario);
+
+            intercambio.getResponseHeaders().add(
+                "Set-Cookie",
+                "TRUEQUE_SESSION=" + token + "; Path=/; HttpOnly; SameSite=Strict"
+            );
+
+            responder(intercambio, 200, "Inicio de sesión exitoso.");
 
         } else {
-            responder(intercambio, 401, mensaje);
+
+            responder(intercambio, 401, "El usuario o la contraseña no coinciden.");
         }
 
     } catch (Exception e) {
@@ -228,7 +260,29 @@ private static void iniciarSesion(HttpExchange intercambio)
             salida.write(respuesta);
         }
     }
+        // Metodo para obtener el usuario que inicio sesion
+    private static Usuario obtenerUsuarioSesion(HttpExchange intercambio) {
 
+        String cookies = intercambio.getRequestHeaders().getFirst("Cookie");
+
+        if (cookies == null) {
+            return null;
+        }
+
+        for (String cookie : cookies.split(";")) {
+
+            cookie = cookie.trim();
+
+            if (cookie.startsWith("TRUEQUE_SESSION=")) {
+
+                String token = cookie.substring("TRUEQUE_SESSION=".length());
+
+                return sesiones.get(token);
+            }
+        }
+
+        return null;
+    }
     private static void consultarCatalogo(HttpExchange intercambio)
             throws IOException {
 

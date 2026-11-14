@@ -63,4 +63,44 @@ public class UsuarioDAO {
             return false;
         }
     }
+
+    public Usuario obtenerPorCredenciales(String nombreAlias, String contrasena) {
+
+    String sql = "SELECT * FROM usuarios WHERE nombre_alias = ? AND contrasena = ? LIMIT 1";
+
+    try (Connection conexion = Conexion.conectar()) {
+
+        if (conexion == null) {
+            return null;
+        }
+
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+
+            consulta.setString(1, nombreAlias);
+            consulta.setString(2, contrasena);
+
+            try (ResultSet resultado = consulta.executeQuery()) {
+
+                if (resultado.next()) {
+
+                    Usuario usuario = new Usuario(
+                        resultado.getInt("id_usuario"),
+                        resultado.getString("nombre_alias"),
+                        resultado.getString("contrasena"),
+                        resultado.getString("programa"),
+                        resultado.getString("rol"),
+                        resultado.getDouble("reputacion")
+                    );
+
+                    return usuario;
+                }
+            }
+        }
+
+    } catch (SQLException e) {
+        System.out.println("Error al obtener el usuario: " + e.getMessage());
+    }
+
+    return null;
+    }
 }
