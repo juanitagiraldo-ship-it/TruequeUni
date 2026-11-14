@@ -24,9 +24,9 @@ public class Login {
         );
 
         if (usuarioValido) {
-            return "Inicio de sesion exitoso.";
+            return "Inicio de sesión exitoso.";
         } else {
-            return "El usuario o la contrasenia no coinciden.";
+            return "El usuario o la contraseña no coinciden.";
         }
     }
 }
