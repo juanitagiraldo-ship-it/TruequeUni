@@ -36,28 +36,93 @@
             <input type="text" placeholder="Buscar por palabra clave...">
             <button>Buscar</button>
         </div>
-
-        <div class="grid">
-            <!-- Tarjeta 1 -->
-            <div class="tarjeta">
-                <img src="https://via.placeholder.com/250x150?text=Libro" alt="Libro">
-                <span class="etiqueta">Buen estado</span>
-                <div class="titulo-articulo">Cálculo Diferencial</div>
-                <div class="info-usuario">Alexandra (Ing. Sistemas)</div>
-                <div class="info-usuario">Calificación: 4.9</div>
-                <a href="chat.html" style="display:block; text-align:center; background-color:#000000; color:white; padding:8px; text-decoration:none; margin-top:10px;">Contactar</a>
+            <div class="grid" id="contenedorPublicaciones">
+                <p>Cargando publicaciones...</p>
             </div>
-
-            <!-- Tarjeta 2 -->
-            <div class="tarjeta">
-                <img src="https://via.placeholder.com/250x150?text=Calculadora" alt="Calculadora">
-                <span class="etiqueta">Nuevo</span>
-                <div class="titulo-articulo">Calculadora Científica</div>
-                <div class="info-usuario">JuanMi O (Ing. Industrial)</div>
-                <div class="info-usuario">Usuario nuevo</div>
-                <a href="chat.html" style="display:block; text-align:center; background-color:#000000; color:white; padding:8px; text-decoration:none; margin-top:10px;">Contactar</a>
-            </div>
-        </div>
+        
     </main>
+    <script>
+            async function cargarPublicaciones() {
+
+     const contenedor = document.getElementById("contenedorPublicaciones");
+
+        try {
+        const respuesta = await fetch("/api/catalogo");
+
+        if (!respuesta.ok) {
+            throw new Error("No se pudieron cargar las publicaciones");
+        }
+
+        const publicaciones = await respuesta.json();
+
+        contenedor.innerHTML = "";
+
+        if (publicaciones.length === 0) {
+            contenedor.textContent = "No hay publicaciones disponibles.";
+            return;
+        }
+
+        publicaciones.forEach(publicacion => {
+
+            const tarjeta = document.createElement("div");
+            tarjeta.className = "tarjeta";
+
+            const imagen = document.createElement("img");
+            imagen.src = publicacion.imagen || "logo.png";
+            imagen.alt = publicacion.titulo;
+
+            const estado = document.createElement("span");
+            estado.className = "etiqueta";
+            estado.textContent = publicacion.estadoFisico;
+
+            const titulo = document.createElement("div");
+            titulo.className = "titulo-articulo";
+            titulo.textContent = publicacion.titulo;
+
+            const descripcion = document.createElement("div");
+            descripcion.className = "info-usuario";
+            descripcion.textContent = publicacion.descripcion || "";
+
+            const usuario = document.createElement("div");
+            usuario.className = "info-usuario";
+            usuario.textContent = publicacion.nombreUsuario +
+                " (" + (publicacion.programa || "Sin programa") + ")";
+
+            const categoria = document.createElement("div");
+            categoria.className = "info-usuario";
+            categoria.textContent = "Categoria: " + publicacion.categoria;
+
+            const oferta = document.createElement("div");
+            oferta.className = "info-usuario";
+            oferta.textContent = "Oferta: " + publicacion.tipoOferta;
+
+            const contacto = document.createElement("a");
+            contacto.href = "chat.html";
+            contacto.textContent = "Contactar";
+            contacto.style.cssText =
+                "display:block;text-align:center;background-color:#000;color:white;padding:8px;text-decoration:none;margin-top:10px;";
+
+            tarjeta.append(
+                imagen,
+                estado,
+                titulo,
+                descripcion,
+                usuario,
+                categoria,
+                oferta,
+                contacto
+            );
+
+            contenedor.appendChild(tarjeta);
+        });
+
+        } catch (error) {
+        contenedor.textContent = "Error al cargar las publicaciones.";
+        console.error(error);
+        }
+        }
+
+    cargarPublicaciones();
+    </script>
 </body>
 </html>

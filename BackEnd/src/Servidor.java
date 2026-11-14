@@ -6,6 +6,10 @@ import controlador.UsuarioController;
 import modelo.Usuario;
 import controlador.Login;
 import controlador.Registro;
+import controlador.Catalogo;
+import modelo.Publicacion;
+import modelo.Usuario;
+import modelo.Categoria;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 public class Servidor {
 
@@ -41,6 +46,11 @@ public class Servidor {
                 iniciarSesion(intercambio);
             });
 
+            // Consultar publicaciones del catalogo
+            servidor.createContext("/api/catalogo", intercambio -> {
+            consultarCatalogo(intercambio);
+            });
+
             servidor.start();
 
             System.out.println("Servidor iniciado correctamente");
@@ -49,6 +59,8 @@ public class Servidor {
         } catch (IOException e) {
             System.out.println("Error al iniciar el servidor: " + e.getMessage());
         }
+
+        
     }
 
     // Metodo para mostrar archivos HTML
@@ -215,5 +227,72 @@ private static void iniciarSesion(HttpExchange intercambio)
         try (OutputStream salida = intercambio.getResponseBody()) {
             salida.write(respuesta);
         }
+    }
+
+    private static void consultarCatalogo(HttpExchange intercambio)
+            throws IOException {
+
+        if (!intercambio.getRequestMethod().equalsIgnoreCase("GET")) {
+            responder(intercambio, 405, "Metodo no permitido");
+            return;
+        }
+
+        Catalogo catalogo = new Catalogo();
+
+        ArrayList<Publicacion> publicaciones =
+                catalogo.consultarPublicaciones();
+
+        StringBuilder json = new StringBuilder("[");
+        
+        for (int i = 0; i < publicaciones.size(); i++) {
+
+            Publicacion p = publicaciones.get(i);
+            Usuario u = p.getUsuario();
+            Categoria c = p.getCategoria();
+
+            if (i > 0) {
+                json.append(",");
+            }
+
+            json.append("{")
+                .append("\"id\":").append(p.getIdPublicacion()).append(",")
+                .append("\"titulo\":\"").append(escaparJSON(p.getTitulo())).append("\",")
+                .append("\"descripcion\":\"").append(escaparJSON(p.getDescripcion())).append("\",")
+                .append("\"estadoFisico\":\"").append(escaparJSON(p.getEstadoFisico())).append("\",")
+                .append("\"tipoOferta\":\"").append(escaparJSON(p.getTipoOferta())).append("\",")
+                .append("\"imagen\":\"").append(escaparJSON(p.getImagen())).append("\",")
+                .append("\"nombreUsuario\":\"").append(escaparJSON(u.getNombreAlias())).append("\",")
+                .append("\"programa\":\"").append(escaparJSON(u.getPrograma())).append("\",")
+                .append("\"reputacion\":").append(u.getReputacion()).append(",")
+                .append("\"categoria\":\"").append(escaparJSON(c.getNombreCategoria())).append("\"")
+                .append("}");
+        }
+
+        json.append("]");
+
+        intercambio.getResponseHeaders().set(
+            "Content-Type", "application/json; charset=UTF-8"
+        );
+
+        byte[] respuesta = json.toString().getBytes(StandardCharsets.UTF_8);
+
+        intercambio.sendResponseHeaders(200, respuesta.length);
+
+        try (OutputStream salida = intercambio.getResponseBody()) {
+            salida.write(respuesta);
+        }
+    }
+
+    private static String escaparJSON(String texto) {
+
+        if (texto == null) {
+            return "";
+        }
+
+        return texto.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
     }
 }
