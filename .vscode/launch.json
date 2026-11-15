@@ -1,0 +1,17 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Depurar Trueque Uni",
+            "request": "launch",
+            "mainClass": "Servidor",
+            "classPaths": [
+                "${workspaceFolder}/BackEnd/bin",
+                "${workspaceFolder}/BackEnd/librerias/mysql-connector-j-26.10.0.jar"
+            ],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
