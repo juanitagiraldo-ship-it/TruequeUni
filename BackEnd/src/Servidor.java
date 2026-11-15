@@ -2,15 +2,14 @@
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpExchange;
 
-import controlador.UsuarioController;
 import modelo.Usuario;
-import controlador.Login;
-import controlador.Registro;
-import controlador.Catalogo;
+import modelo.ResultadoLogin;
 import modelo.Publicacion;
-import modelo.Usuario;
 import modelo.Categoria;
 
+import controlador.LoginController;
+import controlador.Registro;
+import controlador.Catalogo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -52,27 +51,30 @@ public class Servidor {
             servidor.createContext("/api/catalogo", intercambio -> {
             consultarCatalogo(intercambio);
             });
+            
 
+            
+                servidor.createContext("/api/sesion", intercambio -> {
+
+                Usuario usuario = obtenerUsuarioSesion(intercambio);
+
+                if (usuario != null) {
+
+                    responder(intercambio, 200,
+                            "Sesion activa. Usuario: " + usuario.getNombreAlias()
+                            + " | ID: " + usuario.getIdUsuario());
+
+                } else {
+
+                    responder(intercambio, 401, "No hay una sesion activa.");
+                }
+            });
             servidor.start();
 
             System.out.println("Servidor iniciado correctamente");
             System.out.println("Direccion: http://localhost:8080");
 
-            servidor.createContext("/api/sesion", intercambio -> {
-
-    Usuario usuario = obtenerUsuarioSesion(intercambio);
-
-    if (usuario != null) {
-
-        responder(intercambio, 200,
-                "Sesion activa. Usuario: " + usuario.getNombreAlias()
-                + " | ID: " + usuario.getIdUsuario());
-
-    } else {
-
-        responder(intercambio, 401, "No hay una sesion activa.");
-    }
-});
+  
 
         } catch (IOException e) {
             System.out.println("Error al iniciar el servidor: " + e.getMessage());
@@ -160,9 +162,11 @@ public class Servidor {
         }
     }
 
-    // Metodo para iniciar sesion
     
-   private static void iniciarSesion(HttpExchange intercambio)
+    
+  
+// Metodo para iniciar sesion
+private static void iniciarSesion(HttpExchange intercambio)
         throws IOException {
 
     if (!intercambio.getRequestMethod().equalsIgnoreCase("POST")) {
@@ -176,18 +180,15 @@ public class Servidor {
         String nombre = formulario.get("nombre");
         String contrasena = formulario.get("contrasena");
 
-        if (nombre == null || nombre.trim().isEmpty()
-                || contrasena == null || contrasena.trim().isEmpty()) {
+        LoginController loginController = new LoginController();
 
-            responder(intercambio, 400, "Por favor completa todos los campos.");
-            return;
-        }
+        ResultadoLogin resultado = loginController.iniciarSesion(
+                nombre, contrasena
+        );
 
-        Login login = new Login();
+        if (resultado.isExitoso()) {
 
-        Usuario usuario = login.iniciarSesion(nombre, contrasena);
-
-        if (usuario != null) {
+            Usuario usuario = resultado.getUsuario();
 
             String token = UUID.randomUUID().toString();
 
@@ -198,18 +199,19 @@ public class Servidor {
                 "TRUEQUE_SESSION=" + token + "; Path=/; HttpOnly; SameSite=Strict"
             );
 
-            responder(intercambio, 200, "Inicio de sesión exitoso.");
+            responder(intercambio, 200, resultado.getMensaje());
 
         } else {
 
-            responder(intercambio, 401, "El usuario o la contraseña no coinciden.");
+            responder(intercambio, 401, resultado.getMensaje());
         }
 
     } catch (Exception e) {
         System.out.println("Error al iniciar sesion: " + e.getMessage());
-        responder(intercambio, 500, "Error al procesar el inicio de sesion");
+        responder(intercambio, 500, "Error interno del servidor");
     }
 }
+
 
 
     // Metodo para obtener los datos enviados por los formularios
