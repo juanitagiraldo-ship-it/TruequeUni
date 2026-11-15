@@ -1,22 +1,24 @@
+
 package controlador;
 
 import dao.UsuarioDAO;
 import modelo.Usuario;
 
-public class Registro {
+public class RegistroController {
 
     private UsuarioDAO usuarioDAO;
 
-    public Registro() {
+    public RegistroController() {
         usuarioDAO = new UsuarioDAO();
     }
 
     public String registrarUsuario(String nombre, String contrasena) {
 
-       if (nombre == null || nombre.trim().isEmpty()
-        || contrasena == null || contrasena.trim().isEmpty()) {
-        return "Por favor completa todos los campos.";
-}
+        if (nombre == null || nombre.trim().isEmpty()
+                || contrasena == null || contrasena.trim().isEmpty()) {
+
+            return "Por favor completa todos los campos.";
+        }
 
         Usuario usuario = new Usuario(
             0,

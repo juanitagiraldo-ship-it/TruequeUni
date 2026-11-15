@@ -6,9 +6,10 @@ import modelo.Usuario;
 import modelo.ResultadoLogin;
 import modelo.Publicacion;
 import modelo.Categoria;
+import sesion.SesionManager;
 
 import controlador.LoginController;
-import controlador.Registro;
+import controlador.RegistroController;
 import controlador.Catalogo;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,12 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+
 import java.util.ArrayList;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 public class Servidor {
-    private static final Map<String, Usuario> sesiones = new ConcurrentHashMap<>();
+    private static final SesionManager sesionManager = new SesionManager();
     public static void main(String[] args) {
 
         try {
@@ -126,7 +127,6 @@ public class Servidor {
         }
     }
 
-    // Metodo para registrar usuarios
   // Metodo para registrar usuarios
     private static void registrarUsuario(HttpExchange intercambio)
             throws IOException {
@@ -142,9 +142,8 @@ public class Servidor {
             String nombre = formulario.get("nombre");
             String contrasena = formulario.get("contrasena");
 
-            Registro registro = new Registro();
-
-            String mensaje = registro.registrarUsuario(nombre, contrasena);
+            RegistroController registroController = new RegistroController();
+            String mensaje = registroController.registrarUsuario(nombre, contrasena);
 
             if (mensaje.equals("Usuario registrado correctamente.")) {
                 responder(intercambio, 200, mensaje);
@@ -190,9 +189,7 @@ private static void iniciarSesion(HttpExchange intercambio)
 
             Usuario usuario = resultado.getUsuario();
 
-            String token = UUID.randomUUID().toString();
-
-            sesiones.put(token, usuario);
+           String token = sesionManager.crearSesion(usuario);
 
             intercambio.getResponseHeaders().add(
                 "Set-Cookie",
@@ -263,6 +260,7 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
         // Metodo para obtener el usuario que inicio sesion
+    
     private static Usuario obtenerUsuarioSesion(HttpExchange intercambio) {
 
         String cookies = intercambio.getRequestHeaders().getFirst("Cookie");
@@ -279,12 +277,13 @@ private static void iniciarSesion(HttpExchange intercambio)
 
                 String token = cookie.substring("TRUEQUE_SESSION=".length());
 
-                return sesiones.get(token);
+                return sesionManager.obtenerUsuario(token);
             }
         }
 
         return null;
     }
+
     private static void consultarCatalogo(HttpExchange intercambio)
             throws IOException {
 
