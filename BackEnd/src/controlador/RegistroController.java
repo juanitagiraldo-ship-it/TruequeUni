@@ -3,6 +3,7 @@ package controlador;
 
 import dao.UsuarioDAO;
 import modelo.Usuario;
+import modelo.ResultadoRegistro;
 
 public class RegistroController {
 
@@ -12,12 +13,15 @@ public class RegistroController {
         usuarioDAO = new UsuarioDAO();
     }
 
-    public String registrarUsuario(String nombre, String contrasena) {
+    public ResultadoRegistro registrarUsuario(String nombre, String contrasena) {
 
         if (nombre == null || nombre.trim().isEmpty()
                 || contrasena == null || contrasena.trim().isEmpty()) {
 
-            return "Por favor completa todos los campos.";
+            return new ResultadoRegistro(
+                ResultadoRegistro.Estado.DATOS_INVALIDOS,
+                "Por favor completa todos los campos."
+            );
         }
 
         Usuario usuario = new Usuario(
@@ -32,9 +36,18 @@ public class RegistroController {
         boolean registrado = usuarioDAO.registrarUsuario(usuario);
 
         if (registrado) {
-            return "Usuario registrado correctamente.";
+
+            return new ResultadoRegistro(
+                ResultadoRegistro.Estado.EXITOSO,
+                "Usuario registrado correctamente."
+            );
+
         } else {
-            return "No se pudo registrar el usuario.";
+
+            return new ResultadoRegistro(
+                ResultadoRegistro.Estado.ERROR,
+                "No se pudo registrar el usuario."
+            );
         }
     }
 }

@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import modelo.Usuario;
 import modelo.ResultadoLogin;
+import modelo.ResultadoRegistro;
 import modelo.Publicacion;
 import modelo.Categoria;
 import sesion.SesionManager;
@@ -142,18 +143,26 @@ public class Servidor {
             String nombre = formulario.get("nombre");
             String contrasena = formulario.get("contrasena");
 
+           
             RegistroController registroController = new RegistroController();
-            String mensaje = registroController.registrarUsuario(nombre, contrasena);
 
-            if (mensaje.equals("Usuario registrado correctamente.")) {
-                responder(intercambio, 200, mensaje);
+            ResultadoRegistro resultado = registroController.registrarUsuario(
+                    nombre, contrasena
+            );
 
-            } else if (mensaje.equals("Por favor completa todos los campos.")) {
-                responder(intercambio, 400, mensaje);
+            if (resultado.getEstado() == ResultadoRegistro.Estado.EXITOSO) {
+
+                responder(intercambio, 200, resultado.getMensaje());
+
+            } else if (resultado.getEstado() == ResultadoRegistro.Estado.DATOS_INVALIDOS) {
+
+                responder(intercambio, 400, resultado.getMensaje());
 
             } else {
-                responder(intercambio, 500, mensaje);
+
+                responder(intercambio, 500, resultado.getMensaje());
             }
+
 
         } catch (Exception e) {
             System.out.println("Error al registrar usuario: " + e.getMessage());
