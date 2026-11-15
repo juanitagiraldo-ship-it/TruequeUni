@@ -194,11 +194,12 @@ private static void iniciarSesion(HttpExchange intercambio)
                 nombre, contrasena
         );
 
-        if (resultado.isExitoso()) {
+ 
+        if (resultado.getEstado() == ResultadoLogin.Estado.EXITOSO) {
 
             Usuario usuario = resultado.getUsuario();
 
-           String token = sesionManager.crearSesion(usuario);
+            String token = sesionManager.crearSesion(usuario);
 
             intercambio.getResponseHeaders().add(
                 "Set-Cookie",
@@ -207,10 +208,21 @@ private static void iniciarSesion(HttpExchange intercambio)
 
             responder(intercambio, 200, resultado.getMensaje());
 
-        } else {
+        } else if (resultado.getEstado()
+                == ResultadoLogin.Estado.DATOS_INVALIDOS) {
+
+            responder(intercambio, 400, resultado.getMensaje());
+
+        } else if (resultado.getEstado()
+                == ResultadoLogin.Estado.CREDENCIALES_INVALIDAS) {
 
             responder(intercambio, 401, resultado.getMensaje());
+
+        } else {
+
+            responder(intercambio, 500, resultado.getMensaje());
         }
+
 
     } catch (Exception e) {
         System.out.println("Error al iniciar sesion: " + e.getMessage());

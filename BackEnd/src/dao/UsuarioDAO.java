@@ -3,6 +3,7 @@ package dao;
 
 import conexion.Conexion;
 import modelo.Usuario;
+import modelo.ResultadoConsultaUsuario;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,14 +41,20 @@ public class UsuarioDAO {
     }
 
     // Metodo para obtener un usuario mediante sus credenciales
-    public Usuario obtenerPorCredenciales(String nombreAlias, String contrasena) {
+   
+    // Metodo para obtener un usuario mediante sus credenciales
+    public ResultadoConsultaUsuario obtenerPorCredenciales(
+            String nombreAlias, String contrasena) {
 
         String sql = "SELECT * FROM usuarios WHERE nombre_alias = ? AND contrasena = ? LIMIT 1";
 
         try (Connection conexion = Conexion.conectar()) {
 
             if (conexion == null) {
-                return null;
+                return new ResultadoConsultaUsuario(
+                    ResultadoConsultaUsuario.Estado.ERROR,
+                    null
+                );
             }
 
             try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
@@ -68,15 +75,27 @@ public class UsuarioDAO {
                             resultado.getDouble("reputacion")
                         );
 
-                        return usuario;
+                        return new ResultadoConsultaUsuario(
+                            ResultadoConsultaUsuario.Estado.ENCONTRADO,
+                            usuario
+                        );
                     }
+
+                    return new ResultadoConsultaUsuario(
+                        ResultadoConsultaUsuario.Estado.NO_ENCONTRADO,
+                        null
+                    );
                 }
             }
 
         } catch (SQLException e) {
             System.out.println("Error al obtener el usuario: " + e.getMessage());
-        }
 
-        return null;
+            return new ResultadoConsultaUsuario(
+                ResultadoConsultaUsuario.Estado.ERROR,
+                null
+            );
+        }
     }
+
 }

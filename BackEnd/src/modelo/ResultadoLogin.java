@@ -3,18 +3,25 @@ package modelo;
 
 public class ResultadoLogin {
 
-    private boolean exitoso;
+    public enum Estado {
+        EXITOSO,
+        CREDENCIALES_INVALIDAS,
+        DATOS_INVALIDOS,
+        ERROR
+    }
+
+    private Estado estado;
     private String mensaje;
     private Usuario usuario;
 
-    public ResultadoLogin(boolean exitoso, String mensaje, Usuario usuario) {
-        this.exitoso = exitoso;
+    public ResultadoLogin(Estado estado, String mensaje, Usuario usuario) {
+        this.estado = estado;
         this.mensaje = mensaje;
         this.usuario = usuario;
     }
 
-    public boolean isExitoso() {
-        return exitoso;
+    public Estado getEstado() {
+        return estado;
     }
 
     public String getMensaje() {
