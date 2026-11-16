@@ -19,20 +19,12 @@ public class LoginController {
         if (nombreAlias == null || nombreAlias.trim().isEmpty()
                 || contrasena == null || contrasena.trim().isEmpty()) {
 
-            return new ResultadoLogin(
-                ResultadoLogin.Estado.DATOS_INVALIDOS,
-                "Por favor completa todos los campos.",
-                null
-            );
+            return new ResultadoLogin(ResultadoLogin.Estado.DATOS_INVALIDOS, "Por favor completa todos los campos.", null);
         }
 
-        ResultadoConsultaUsuario resultadoConsulta =
-                usuarioDAO.obtenerPorCredenciales(
-                    nombreAlias.trim(), contrasena
-                );
+        ResultadoConsultaUsuario resultadoConsulta = usuarioDAO.obtenerPorCredenciales(nombreAlias.trim(), contrasena);
 
-        if (resultadoConsulta.getEstado()
-                == ResultadoConsultaUsuario.Estado.ENCONTRADO) {
+        if (resultadoConsulta.getEstado() == ResultadoConsultaUsuario.Estado.ENCONTRADO) {
 
             Usuario usuario = resultadoConsulta.getUsuario();
 

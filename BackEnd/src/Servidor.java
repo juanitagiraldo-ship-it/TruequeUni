@@ -190,9 +190,7 @@ private static void iniciarSesion(HttpExchange intercambio)
 
         LoginController loginController = new LoginController();
 
-        ResultadoLogin resultado = loginController.iniciarSesion(
-                nombre, contrasena
-        );
+        ResultadoLogin resultado = loginController.iniciarSesion(nombre, contrasena);
 
  
         if (resultado.getEstado() == ResultadoLogin.Estado.EXITOSO) {
@@ -208,13 +206,11 @@ private static void iniciarSesion(HttpExchange intercambio)
 
             responder(intercambio, 200, resultado.getMensaje());
 
-        } else if (resultado.getEstado()
-                == ResultadoLogin.Estado.DATOS_INVALIDOS) {
+        } else if (resultado.getEstado()  == ResultadoLogin.Estado.DATOS_INVALIDOS) {
 
             responder(intercambio, 400, resultado.getMensaje());
 
-        } else if (resultado.getEstado()
-                == ResultadoLogin.Estado.CREDENCIALES_INVALIDAS) {
+        } else if (resultado.getEstado() == ResultadoLogin.Estado.CREDENCIALES_INVALIDAS) {
 
             responder(intercambio, 401, resultado.getMensaje());
 

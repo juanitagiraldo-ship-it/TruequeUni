@@ -18,10 +18,7 @@ public class RegistroController {
         if (nombre == null || nombre.trim().isEmpty()
                 || contrasena == null || contrasena.trim().isEmpty()) {
 
-            return new ResultadoRegistro(
-                ResultadoRegistro.Estado.DATOS_INVALIDOS,
-                "Por favor completa todos los campos."
-            );
+            return new ResultadoRegistro(ResultadoRegistro.Estado.DATOS_INVALIDOS, "Por favor completa todos los campos.");
         }
 
         Usuario usuario = new Usuario(
@@ -37,17 +34,11 @@ public class RegistroController {
 
         if (registrado) {
 
-            return new ResultadoRegistro(
-                ResultadoRegistro.Estado.EXITOSO,
-                "Usuario registrado correctamente."
-            );
+            return new ResultadoRegistro(ResultadoRegistro.Estado.EXITOSO, "Usuario registrado correctamente.");
 
         } else {
 
-            return new ResultadoRegistro(
-                ResultadoRegistro.Estado.ERROR,
-                "No se pudo registrar el usuario."
-            );
+            return new ResultadoRegistro(ResultadoRegistro.Estado.ERROR,"No se pudo registrar el usuario.");
         }
     }
 }
