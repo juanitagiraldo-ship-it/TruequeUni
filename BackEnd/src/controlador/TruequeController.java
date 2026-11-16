@@ -14,9 +14,18 @@ import java.sql.SQLException;
 import java.sql.Date;
 import java.util.ArrayList;
 
+/**
+ * Gestiona el registro, la consulta y la actualización de solicitudes de trueque.
+ */
 public class TruequeController {
 
-    // Metodo para registrar una solicitud
+    /**
+     * Registra una solicitud de trueque en la base de datos.
+     *
+     * @param trueque solicitud que se va a guardar
+     * @return {@code true} si se registró correctamente; {@code false} si ocurrió
+     *         un error al guardar
+     */
     public boolean registrarSolicitud(Trueque trueque) {
 
         String sql = "INSERT INTO solicitudes (tipo_solicitud, estado, fecha_solicitud, id_usuario, id_publicacion) VALUES (?, ?, ?, ?, ?)";
@@ -47,7 +56,12 @@ public class TruequeController {
         }
     }
 
-    // Metodo para consultar todas las solicitudes
+    /**
+     * Consulta las solicitudes almacenadas en la base de datos.
+     *
+     * @return lista de solicitudes consultadas; puede estar vacía si no hay
+     *         solicitudes o si ocurre un error durante la consulta
+     */
     public ArrayList<Trueque> consultarSolicitudes() {
 
         ArrayList<Trueque> solicitudes = new ArrayList<>();
@@ -90,7 +104,14 @@ public class TruequeController {
         return solicitudes;
     }
 
-    // Metodo para actualizar el estado de una solicitud
+    /**
+     * Actualiza el estado de una solicitud existente.
+     *
+     * @param idSolicitud identificador de la solicitud que se actualizará
+     * @param nuevoEstado nuevo estado que se asignará
+     * @return {@code true} si se actualizó al menos una fila; {@code false} si
+     *         la solicitud no existe o si ocurre un error
+     */
     public boolean actualizarEstado(int idSolicitud, String nuevoEstado) {
 
         String sql = "UPDATE solicitudes SET estado = ? WHERE id_solicitud = ?";
