@@ -10,9 +10,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Accede a los datos de los usuarios en la base de datos.
+ */
 public class UsuarioDAO {
 
-    // Metodo para registrar un usuario
+    /**
+     * Registra un usuario en la base de datos.
+     *
+     * @param usuario usuario que se va a guardar
+     * @return {@code true} si se insertó el usuario; {@code false} si no se
+     *         pudo realizar el registro
+     */
     public boolean registrarUsuario(Usuario usuario) {
 
         String sql = "INSERT INTO usuarios (nombre_alias, contrasena, programa, rol, reputacion) VALUES (?, ?, ?, ?, ?)";
@@ -40,9 +49,14 @@ public class UsuarioDAO {
         }
     }
 
-    // Metodo para obtener un usuario mediante sus credenciales
-   
-    // Metodo para obtener un usuario mediante sus credenciales
+    /**
+     * Busca un usuario que coincida con el alias y la contraseña indicados.
+     *
+     * @param nombreAlias alias del usuario
+     * @param contrasena contraseña del usuario
+     * @return resultado que indica si el usuario fue encontrado, no existe o
+     *         ocurrió un error durante la consulta
+     */
     public ResultadoConsultaUsuario obtenerPorCredenciales(
             String nombreAlias, String contrasena) {
 
