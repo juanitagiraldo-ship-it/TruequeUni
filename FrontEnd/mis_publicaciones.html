@@ -2,17 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mis Publicaciones - TruequeUni</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
         header { background-color: #004d40; color: white; padding: 15px; margin-bottom: 30px; }
         header a { color: white; text-decoration: none; margin-right: 15px; }
         table { width: 100%; border-collapse: collapse; background-color: white; }
-        th, td { border: 1px solid #ccc; padding: 12px; text-align: left; }
+        th, td { border: 1px solid #ccc; padding: 12px; text-align: left; vertical-align: top; }
         th { background-color: #eee; }
-        .btn { padding: 5px 10px; border: none; cursor: pointer; }
-        .btn-editar { background-color: #ccc; }
-        .btn-eliminar { background-color: #004d40; color: white; }
+        .detalles h3 { margin: 0 0 8px; color: #004d40; }
+        .detalles p { margin: 6px 0; }
+        .formulario-edicion { display: grid; gap: 10px; }
+        .formulario-edicion[hidden] { display: none; }
+        label { display: grid; gap: 5px; font-weight: bold; color: #004d40; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #aaa; box-sizing: border-box; }
+        .checkbox-imagen { display: flex; align-items: center; font-weight: normal; }
+        .checkbox-imagen input { width: auto; }
+        .btn { padding: 7px 10px; border: none; cursor: pointer; margin: 2px; }
+        .btn-editar, .btn-guardar { background-color: #004d40; color: white; }
+        .btn-cancelar { background-color: #ddd; }
+        .btn-eliminar { background-color: #9b1c1c; color: white; }
+        .btn:disabled { cursor: default; opacity: .6; }
+        #mensaje { min-height: 1.2em; }
+        @media (max-width: 700px) {
+            body { padding: 10px; }
+            th, td { padding: 7px; }
+            table { font-size: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -20,29 +37,315 @@
         <a href="catalogo.html">&larr; Volver al catálogo</a>
     </header>
 
-    <h2>Gestión de Inventario</h2>
+    <h2>Mis publicaciones</h2>
+    <p>El estado es de solo lectura. El botón Eliminar cambia la publicación a inactiva; no la borra de la base de datos.</p>
     <table>
-        <tr>
-            <th>Artículo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-        <tr>
-            <td>Cálculo Diferencial</td>
-            <td>Activo</td>
-            <td>
-                <button class="btn btn-editar">Editar</button>
-                <button class="btn btn-eliminar">Eliminar</button>
-            </td>
-        </tr>
-        <tr>
-            <td>Calculadora Científica</td>
-            <td>Pausado</td>
-            <td>
-                <button class="btn btn-editar">Editar</button>
-                <button class="btn btn-eliminar">Eliminar</button>
-            </td>
-        </tr>
+        <thead>
+            <tr>
+                <th>Artículo</th>
+                <th>Estado (no editable)</th>
+                <th>Editar</th>
+                <th>Eliminar</th>
+            </tr>
+        </thead>
+        <tbody id="contenedorPublicaciones">
+            <tr><td colspan="4">Cargando publicaciones...</td></tr>
+        </tbody>
     </table>
+    <p id="mensaje" role="status"></p>
+    <script>
+        const contenedor = document.getElementById("contenedorPublicaciones");
+        const mensaje = document.getElementById("mensaje");
+        const categorias = [
+            ["1", "Libros"],
+            ["2", "Ropa"],
+            ["3", "Tecnología"],
+            ["4", "Artículos para el hogar"]
+        ];
+        const estadosFisicos = ["Nuevo", "Buen estado", "Usado"];
+        const tiposOferta = [
+            ["donacion", "Donación"],
+            ["intercambio", "Intercambio"]
+        ];
+        const maximoImagenBytes = 5 * 1024 * 1024;
+
+        function crearCampo(etiqueta, tipo, valor, opciones) {
+            const label = document.createElement("label");
+            label.append(document.createTextNode(etiqueta));
+            const control = tipo === "textarea"
+                ? document.createElement("textarea")
+                : document.createElement(tipo === "select" ? "select" : "input");
+
+            if (tipo === "select") {
+                opciones.forEach(opcion => {
+                    const elemento = document.createElement("option");
+                    elemento.value = opcion[0];
+                    elemento.textContent = opcion[1];
+                    control.appendChild(elemento);
+                });
+            } else if (tipo === "textarea") {
+                control.rows = 3;
+            } else {
+                control.type = tipo;
+            }
+
+            if (valor !== undefined && valor !== null) {
+                control.value = valor;
+            }
+            label.appendChild(control);
+            return { label, control };
+        }
+
+        function leerArchivoComoDataURL(archivo) {
+            return new Promise((resolve, reject) => {
+                const lector = new FileReader();
+                lector.onload = () => resolve(lector.result);
+                lector.onerror = () => reject(new Error("No se pudo leer la imagen."));
+                lector.readAsDataURL(archivo);
+            });
+        }
+
+        function crearFila(publicacion) {
+            const fila = document.createElement("tr");
+            const articulo = document.createElement("td");
+            const estado = document.createElement("td");
+            const editar = document.createElement("td");
+            const eliminar = document.createElement("td");
+            const detalles = document.createElement("div");
+            detalles.className = "detalles";
+
+            const titulo = document.createElement("h3");
+            titulo.textContent = publicacion.titulo;
+            detalles.appendChild(titulo);
+            [
+                "Categoría: " + publicacion.categoria,
+                "Estado físico: " + publicacion.estadoFisico,
+                "Tipo de oferta: " + publicacion.tipoOferta,
+                "Descripción: " + (publicacion.descripcion || "Sin descripción")
+            ].forEach(texto => {
+                const parrafo = document.createElement("p");
+                parrafo.textContent = texto;
+                detalles.appendChild(parrafo);
+            });
+            if (publicacion.imagen) {
+                const imagen = document.createElement("img");
+                imagen.src = publicacion.imagen;
+                imagen.alt = "Imagen de " + publicacion.titulo;
+                imagen.style.maxWidth = "120px";
+                imagen.style.maxHeight = "120px";
+                detalles.appendChild(imagen);
+            }
+
+            const formulario = document.createElement("form");
+            formulario.className = "formulario-edicion";
+            formulario.hidden = true;
+            formulario.id = "editar-publicacion-" + publicacion.id;
+            const campoTitulo = crearCampo("Título", "text", publicacion.titulo);
+            campoTitulo.control.maxLength = 100;
+            campoTitulo.control.required = true;
+            const campoCategoria = crearCampo(
+                "Categoría", "select", String(publicacion.idCategoria), categorias);
+            const campoEstadoFisico = crearCampo(
+                "Estado físico", "select", publicacion.estadoFisico,
+                estadosFisicos.map(valor => [valor, valor]));
+            const campoTipoOferta = crearCampo(
+                "Tipo de oferta", "select", publicacion.tipoOferta, tiposOferta);
+            const campoDescripcion = crearCampo(
+                "Descripción", "textarea", publicacion.descripcion || "");
+            const campoImagen = crearCampo("Cambiar imagen", "file");
+            campoImagen.control.accept = "image/png,image/jpeg,image/gif";
+            const labelEliminarImagen = document.createElement("label");
+            labelEliminarImagen.className = "checkbox-imagen";
+            const checkEliminarImagen = document.createElement("input");
+            checkEliminarImagen.type = "checkbox";
+            checkEliminarImagen.name = "eliminarImagen";
+            labelEliminarImagen.append(
+                checkEliminarImagen,
+                document.createTextNode("Quitar la imagen actual"));
+            campoImagen.control.addEventListener("change", () => {
+                if (campoImagen.control.files.length > 0) {
+                    checkEliminarImagen.checked = false;
+                }
+            });
+            checkEliminarImagen.addEventListener("change", () => {
+                if (checkEliminarImagen.checked) {
+                    campoImagen.control.value = "";
+                }
+            });
+
+            formulario.append(
+                campoTitulo.label,
+                campoCategoria.label,
+                campoEstadoFisico.label,
+                campoTipoOferta.label,
+                campoDescripcion.label,
+                campoImagen.label,
+                labelEliminarImagen
+            );
+            articulo.append(detalles, formulario);
+
+            estado.textContent = publicacion.estadoPublicacion;
+            const botonEditar = document.createElement("button");
+            botonEditar.type = "button";
+            botonEditar.className = "btn btn-editar";
+            botonEditar.textContent = "Editar";
+            const botonGuardar = document.createElement("button");
+            botonGuardar.type = "submit";
+            botonGuardar.setAttribute("form", formulario.id);
+            botonGuardar.className = "btn btn-guardar";
+            botonGuardar.textContent = "Guardar";
+            botonGuardar.hidden = true;
+            const botonCancelar = document.createElement("button");
+            botonCancelar.type = "button";
+            botonCancelar.className = "btn btn-cancelar";
+            botonCancelar.textContent = "Cancelar";
+            botonCancelar.hidden = true;
+            editar.append(botonEditar, botonGuardar, botonCancelar);
+
+            const botonEliminar = document.createElement("button");
+            botonEliminar.type = "button";
+            botonEliminar.className = "btn btn-eliminar";
+            botonEliminar.textContent = publicacion.estadoPublicacion === "inactivo"
+                ? "Inactiva" : "Eliminar";
+            botonEliminar.disabled = publicacion.estadoPublicacion === "inactivo";
+            eliminar.appendChild(botonEliminar);
+
+            botonEditar.addEventListener("click", () => {
+                detalles.hidden = true;
+                formulario.hidden = false;
+                botonEditar.hidden = true;
+                botonGuardar.hidden = false;
+                botonCancelar.hidden = false;
+                campoTitulo.control.value = publicacion.titulo;
+                campoCategoria.control.value = String(publicacion.idCategoria);
+                campoEstadoFisico.control.value = publicacion.estadoFisico;
+                campoTipoOferta.control.value = publicacion.tipoOferta;
+                campoDescripcion.control.value = publicacion.descripcion || "";
+                campoImagen.control.value = "";
+                checkEliminarImagen.checked = false;
+            });
+
+            botonCancelar.addEventListener("click", () => {
+                formulario.hidden = true;
+                detalles.hidden = false;
+                botonEditar.hidden = false;
+                botonGuardar.hidden = true;
+                botonCancelar.hidden = true;
+            });
+
+            formulario.addEventListener("submit", async event => {
+                event.preventDefault();
+                mensaje.textContent = "";
+                let nuevaImagen = "";
+                let tipoImagen = "";
+                const archivo = campoImagen.control.files[0];
+
+                try {
+                    if (archivo) {
+                        if (archivo.size > maximoImagenBytes) {
+                            throw new Error("La imagen no puede superar los 5 MB.");
+                        }
+                        if (!["image/png", "image/jpeg", "image/gif"].includes(archivo.type)) {
+                            throw new Error("Selecciona una imagen PNG, JPEG o GIF.");
+                        }
+                        const dataURL = await leerArchivoComoDataURL(archivo);
+                        nuevaImagen = dataURL.substring(dataURL.indexOf(",") + 1);
+                        tipoImagen = archivo.type;
+                    }
+
+                    const datos = new URLSearchParams({
+                        titulo: campoTitulo.control.value.trim(),
+                        idCategoria: campoCategoria.control.value,
+                        estadoFisico: campoEstadoFisico.control.value,
+                        tipoOferta: campoTipoOferta.control.value,
+                        descripcion: campoDescripcion.control.value,
+                        imagenBase64: nuevaImagen,
+                        tipoImagen: tipoImagen,
+                        eliminarImagen: String(checkEliminarImagen.checked)
+                    });
+                    const respuesta = await fetch(
+                        "/api/publicaciones/" + encodeURIComponent(publicacion.id), {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: datos
+                        });
+                    const resultado = await respuesta.text();
+                    if (!respuesta.ok) {
+                        throw new Error(resultado || "No se pudo actualizar la publicación.");
+                    }
+                    mensaje.style.color = "green";
+                    mensaje.textContent = resultado;
+                    await cargarPublicaciones();
+                } catch (error) {
+                    mensaje.style.color = "red";
+                    mensaje.textContent = error.message
+                        || "No se pudo actualizar la publicación.";
+                }
+            });
+
+            botonEliminar.addEventListener("click", async () => {
+                if (!window.confirm(
+                    "La publicación pasará a inactiva y dejará de aparecer en el catálogo. ¿Continuar?")) {
+                    return;
+                }
+
+                try {
+                    const respuesta = await fetch(
+                        "/api/publicaciones/" + encodeURIComponent(publicacion.id), {
+                            method: "DELETE"
+                        });
+                    const resultado = await respuesta.text();
+                    if (!respuesta.ok) {
+                        throw new Error(resultado || "No se pudo desactivar la publicación.");
+                    }
+                    estado.textContent = "inactivo";
+                    publicacion.estadoPublicacion = "inactivo";
+                    botonEliminar.textContent = "Inactiva";
+                    botonEliminar.disabled = true;
+                    mensaje.style.color = "green";
+                    mensaje.textContent = resultado;
+                } catch (error) {
+                    mensaje.style.color = "red";
+                    mensaje.textContent = error.message
+                        || "No se pudo desactivar la publicación.";
+                }
+            });
+
+            fila.append(articulo, estado, editar, eliminar);
+            return fila;
+        }
+
+        async function cargarPublicaciones() {
+            try {
+                const respuesta = await fetch("/api/mis-publicaciones");
+                if (!respuesta.ok) {
+                    throw new Error(await respuesta.text());
+                }
+
+                const publicaciones = await respuesta.json();
+                contenedor.replaceChildren();
+                if (publicaciones.length === 0) {
+                    contenedor.innerHTML =
+                        "<tr><td colspan=\"4\">No tienes publicaciones.</td></tr>";
+                    return;
+                }
+
+                publicaciones.forEach(publicacion => {
+                    contenedor.appendChild(crearFila(publicacion));
+                });
+            } catch (error) {
+                contenedor.replaceChildren();
+                contenedor.innerHTML =
+                    "<tr><td colspan=\"4\">No se pudieron cargar tus publicaciones.</td></tr>";
+                mensaje.style.color = "red";
+                mensaje.textContent = error.message
+                    || "No se pudieron cargar tus publicaciones.";
+            }
+        }
+
+        cargarPublicaciones();
+    </script>
 </body>
 </html>

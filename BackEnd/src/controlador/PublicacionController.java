@@ -1,111 +1,161 @@
 package controlador;
 
+import dao.PublicacionDAO;
+import modelo.ResultadoPublicacion;
 import modelo.Publicacion;
 import modelo.Usuario;
 import modelo.Categoria;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Date;
 import java.util.ArrayList;
-import conexion.Conexion;
 
 /**
- * Gestiona el registro y la consulta de publicaciones.
+ * Coordina el registro y la consulta de publicaciones.
  */
 public class PublicacionController {
 
-    /**
-     * Registra una publicación en la base de datos.
-     *
-     * @param publicacion publicación que se va a guardar
-     * @return {@code true} si se registró correctamente; {@code false} si ocurrió
-     *         un error al guardar
-     */
-    public boolean registrarPublicacion(Publicacion publicacion) {
+    private final PublicacionDAO publicacionDAO;
 
-        String sql = "INSERT INTO publicaciones (titulo, descripcion, estado_fisico, estado_publicacion, tipo_oferta, imagen, fecha_publicacion, id_usuario, id_categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conexion = Conexion.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql)) {
-
-            consulta.setString(1, publicacion.getTitulo());
-            consulta.setString(2, publicacion.getDescripcion());
-            consulta.setString(3, publicacion.getEstadoFisico());
-            consulta.setString(4, publicacion.getEstadoPublicacion());
-            consulta.setString(5, publicacion.getTipoOferta());
-            consulta.setString(6, publicacion.getImagen());
-
-            if (publicacion.getFechaPublicacion() != null) {
-                consulta.setDate(7, new Date(publicacion.getFechaPublicacion().getTime()));
-            } else {
-                consulta.setDate(7, null);
-            }
-
-            consulta.setInt(8, publicacion.getUsuario().getIdUsuario());
-            consulta.setInt(9, publicacion.getCategoria().getIdCategoria());
-
-            consulta.executeUpdate();
-
-            System.out.println("Publicacion registrada correctamente");
-            return true;
-
-        } catch (SQLException e) {
-            System.out.println("Error al registrar publicacion: " + e.getMessage());
-            return false;
-        }
+    public PublicacionController() {
+        publicacionDAO = new PublicacionDAO();
     }
 
     /**
-     * Consulta las publicaciones almacenadas en la base de datos.
-     *
-     * @return lista de publicaciones consultadas; puede estar vacía si no hay
-     *         publicaciones o si ocurre un error durante la consulta
+     * Valida y registra una publicación nueva del usuario autenticado.
      */
-    public ArrayList<Publicacion> consultarPublicaciones() {
+    public ResultadoPublicacion registrarPublicacion(
+            String titulo,
+            String descripcion,
+            String estadoFisico,
+            String tipoOferta,
+            String imagen,
+            int idCategoria,
+            Usuario usuario) {
 
-        ArrayList<Publicacion> publicaciones = new ArrayList<>();
-
-        String sql = "SELECT * FROM publicaciones";
-
-        try (Connection conexion = Conexion.conectar();
-             PreparedStatement consulta = conexion.prepareStatement(sql);
-             ResultSet resultado = consulta.executeQuery()) {
-
-            while (resultado.next()) {
-
-                Usuario usuario = new Usuario(
-                    resultado.getInt("id_usuario"),
-                    "", "", "", "", 0.0
-                );
-
-                Categoria categoria = new Categoria(
-                    resultado.getInt("id_categoria"),
-                    "",
-                    ""
-                );
-
-                Publicacion publicacion = new Publicacion(
-                    resultado.getInt("id_publicacion"),
-                    resultado.getString("titulo"),
-                    resultado.getString("descripcion"),
-                    resultado.getString("estado_fisico"),
-                    resultado.getString("estado_publicacion"),
-                    resultado.getString("tipo_oferta"),
-                    resultado.getString("imagen"),
-                    resultado.getDate("fecha_publicacion"),
-                    usuario,
-                    categoria
-                );
-
-                publicaciones.add(publicacion);
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error al consultar publicaciones: " + e.getMessage());
+        if (titulo == null || titulo.trim().isEmpty()
+                || estadoFisico == null || estadoFisico.trim().isEmpty()
+                || !("donacion".equals(tipoOferta)
+                    || "intercambio".equals(tipoOferta))
+                || idCategoria <= 0
+                || usuario == null) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.DATOS_INVALIDOS,
+                    "Completa los campos obligatorios de la publicación.");
         }
 
-        return publicaciones;
+        Publicacion publicacion = new Publicacion(
+            0,
+            titulo.trim(),
+            descripcion == null ? "" : descripcion.trim(),
+            estadoFisico.trim(),
+            "activo",
+            tipoOferta,
+            imagen,
+            new java.util.Date(),
+            usuario,
+            new Categoria(idCategoria, "", "")
+        );
+
+        if (!publicacionDAO.registrarPublicacion(publicacion)) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.ERROR,
+                    "No se pudo registrar la publicación.");
+        }
+
+        return new ResultadoPublicacion(
+                ResultadoPublicacion.Estado.EXITOSO,
+                "Publicación registrada correctamente.");
+    }
+
+    /**
+     * Consulta las publicaciones del usuario autenticado.
+     */
+    public ArrayList<Publicacion> consultarPorUsuario(int idUsuario) {
+        if (idUsuario <= 0) {
+            return new ArrayList<>();
+        }
+        return publicacionDAO.consultarPorUsuario(idUsuario);
+    }
+
+    /**
+     * Actualiza los datos editables sin modificar el estado de publicación.
+     */
+    public ResultadoPublicacion actualizarPublicacion(
+            int idPublicacion,
+            String titulo,
+            String descripcion,
+            String estadoFisico,
+            String tipoOferta,
+            String imagen,
+            boolean eliminarImagen,
+            int idCategoria,
+            Usuario usuario) {
+
+        if (idPublicacion <= 0 || titulo == null || titulo.trim().isEmpty()
+                || estadoFisico == null || estadoFisico.trim().isEmpty()
+                || !("donacion".equals(tipoOferta)
+                    || "intercambio".equals(tipoOferta))
+                || idCategoria <= 0 || usuario == null) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.DATOS_INVALIDOS,
+                    "Completa los campos obligatorios de la publicación.");
+        }
+
+        Publicacion publicacion = new Publicacion(
+                idPublicacion,
+                titulo.trim(),
+                descripcion == null ? "" : descripcion.trim(),
+                estadoFisico.trim(),
+                null,
+                tipoOferta,
+                imagen,
+                null,
+                usuario,
+                new Categoria(idCategoria, "", "")
+        );
+
+        int filasActualizadas = publicacionDAO.actualizarPublicacion(
+                publicacion, eliminarImagen);
+        if (filasActualizadas < 0) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.ERROR,
+                    "No se pudo actualizar la publicación.");
+        }
+        if (filasActualizadas == 0) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.NO_ENCONTRADO,
+                    "No se encontró una publicación editable para este usuario.");
+        }
+
+        return new ResultadoPublicacion(
+                ResultadoPublicacion.Estado.EXITOSO,
+                "Publicación actualizada correctamente.");
+    }
+
+    /**
+     * Da de baja una publicación sin eliminarla de la base de datos.
+     */
+    public ResultadoPublicacion marcarComoInactiva(
+            int idPublicacion, int idUsuario) {
+        if (idPublicacion <= 0 || idUsuario <= 0) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.DATOS_INVALIDOS,
+                    "La publicación indicada no es válida.");
+        }
+
+        int filasActualizadas = publicacionDAO.marcarComoInactiva(
+                idPublicacion, idUsuario);
+        if (filasActualizadas < 0) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.ERROR,
+                    "No se pudo desactivar la publicación.");
+        }
+        if (filasActualizadas == 0) {
+            return new ResultadoPublicacion(
+                    ResultadoPublicacion.Estado.NO_ENCONTRADO,
+                    "No se encontró una publicación activa para este usuario.");
+        }
+
+        return new ResultadoPublicacion(
+                ResultadoPublicacion.Estado.EXITOSO,
+                "Publicación marcada como inactiva.");
     }
 }
