@@ -11,7 +11,7 @@ import sesion.SesionManager;
 
 import controlador.LoginController;
 import controlador.RegistroController;
-import controlador.Catalogo;
+import controlador.CatalogoController;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -309,10 +309,10 @@ private static void iniciarSesion(HttpExchange intercambio)
             return;
         }
 
-        Catalogo catalogo = new Catalogo();
+        CatalogoController catalogoController = new CatalogoController();
 
         ArrayList<Publicacion> publicaciones =
-                catalogo.consultarPublicaciones();
+                catalogoController.consultarPublicaciones();
 
         StringBuilder json = new StringBuilder("[");
         

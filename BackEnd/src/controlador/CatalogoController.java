@@ -5,16 +5,16 @@ import modelo.Publicacion;
 import java.util.ArrayList;
 
 /**
- * Gestiona las operaciones de consulta del catálogo de publicaciones.
+ * Coordina las consultas de publicaciones para el catálogo.
  */
-public class Catalogo {
+public class CatalogoController {
 
     private PublicacionDAO publicacionDAO;
 
     /**
-     * Crea el catálogo e inicializa el acceso a los datos de publicaciones.
+     * Crea el controlador e inicializa el acceso a los datos de publicaciones.
      */
-    public Catalogo() {
+    public CatalogoController() {
         publicacionDAO = new PublicacionDAO();
     }
 
