@@ -27,4 +27,11 @@ public class CatalogoController {
 
         return publicacionDAO.consultarPublicaciones();
     }
+
+    /**
+     * Busca publicaciones activas por título, descripción o categoría.
+     */
+    public ArrayList<Publicacion> consultarPublicaciones(String busqueda) {
+        return publicacionDAO.consultarPublicaciones(busqueda);
+    }
 }

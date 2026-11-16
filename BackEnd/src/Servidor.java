@@ -743,8 +743,13 @@ private static void iniciarSesion(HttpExchange intercambio)
 
         CatalogoController catalogoController = new CatalogoController();
 
+        String consulta = intercambio.getRequestURI().getRawQuery();
+        Map<String, String> parametros = analizarDatosFormulario(
+                consulta == null ? "" : consulta);
+        String busqueda = parametros.get("busqueda");
+
         ArrayList<Publicacion> publicaciones =
-                catalogoController.consultarPublicaciones();
+                catalogoController.consultarPublicaciones(busqueda);
 
         StringBuilder json = new StringBuilder("[");
         

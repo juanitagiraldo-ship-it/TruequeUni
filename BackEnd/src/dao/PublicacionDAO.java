@@ -158,6 +158,17 @@ public class PublicacionDAO {
      *         resultados o si no se puede completar la consulta
      */
     public ArrayList<Publicacion> consultarPublicaciones() {
+        return consultarPublicaciones("");
+    }
+
+    /**
+     * Consulta publicaciones activas y, si se indicó, filtra por título,
+     * descripción o categoría.
+     *
+     * @param busqueda texto que debe aparecer en alguno de los campos buscables
+     * @return publicaciones activas que coinciden con la búsqueda
+     */
+    public ArrayList<Publicacion> consultarPublicaciones(String busqueda) {
 
         ArrayList<Publicacion> publicaciones = new ArrayList<>();
 
@@ -166,8 +177,19 @@ public class PublicacionDAO {
                    + "FROM publicaciones p "
                    + "INNER JOIN usuarios u ON p.id_usuario = u.id_usuario "
                    + "INNER JOIN categorias c ON p.id_categoria = c.id_categoria "
-                   + "WHERE p.estado_publicacion = 'activo' "
-                   + "ORDER BY p.fecha_publicacion DESC";
+                   + "WHERE p.estado_publicacion = 'activo' ";
+
+        String termino = busqueda == null ? "" : busqueda.trim();
+        String patron = termino.isEmpty() ? null : "%"
+                + termino.replace("!", "!!")
+                        .replace("%", "!%")
+                        .replace("_", "!_") + "%";
+        if (!termino.isEmpty()) {
+            sql += "AND (p.titulo LIKE ? ESCAPE '!' "
+                    + "OR p.descripcion LIKE ? ESCAPE '!' "
+                    + "OR c.nombre_categoria LIKE ? ESCAPE '!') ";
+        }
+        sql += "ORDER BY p.fecha_publicacion DESC";
 
         try (Connection conexion = Conexion.conectar()) {
 
@@ -175,40 +197,47 @@ public class PublicacionDAO {
                 return publicaciones;
             }
 
-            try (PreparedStatement consulta = conexion.prepareStatement(sql);
-                 ResultSet resultado = consulta.executeQuery()) {
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                if (!termino.isEmpty()) {
+                    consulta.setString(1, patron);
+                    consulta.setString(2, patron);
+                    consulta.setString(3, patron);
+                }
 
-                while (resultado.next()) {
+                try (ResultSet resultado = consulta.executeQuery()) {
 
-                    Usuario usuario = new Usuario(
-                        resultado.getInt("id_usuario"),
-                        resultado.getString("nombre_alias"),
-                        "",
-                        resultado.getString("programa"),
-                        "",
-                        resultado.getDouble("reputacion")
-                    );
+                    while (resultado.next()) {
 
-                    Categoria categoria = new Categoria(
-                        resultado.getInt("id_categoria"),
-                        resultado.getString("nombre_categoria"),
-                        ""
-                    );
+                        Usuario usuario = new Usuario(
+                            resultado.getInt("id_usuario"),
+                            resultado.getString("nombre_alias"),
+                            "",
+                            resultado.getString("programa"),
+                            "",
+                            resultado.getDouble("reputacion")
+                        );
 
-                    Publicacion publicacion = new Publicacion(
-                        resultado.getInt("id_publicacion"),
-                        resultado.getString("titulo"),
-                        resultado.getString("descripcion"),
-                        resultado.getString("estado_fisico"),
-                        resultado.getString("estado_publicacion"),
-                        resultado.getString("tipo_oferta"),
-                        resultado.getString("imagen"),
-                        resultado.getDate("fecha_publicacion"),
-                        usuario,
-                        categoria
-                    );
+                        Categoria categoria = new Categoria(
+                            resultado.getInt("id_categoria"),
+                            resultado.getString("nombre_categoria"),
+                            ""
+                        );
 
-                    publicaciones.add(publicacion);
+                        Publicacion publicacion = new Publicacion(
+                            resultado.getInt("id_publicacion"),
+                            resultado.getString("titulo"),
+                            resultado.getString("descripcion"),
+                            resultado.getString("estado_fisico"),
+                            resultado.getString("estado_publicacion"),
+                            resultado.getString("tipo_oferta"),
+                            resultado.getString("imagen"),
+                            resultado.getDate("fecha_publicacion"),
+                            usuario,
+                            categoria
+                        );
+
+                        publicaciones.add(publicacion);
+                    }
                 }
             }
 
