@@ -6,14 +6,28 @@ import modelo.Usuario;
 import modelo.ResultadoLogin;
 import modelo.ResultadoConsultaUsuario;
 
+/**
+ * Coordina la autenticación de usuarios mediante sus credenciales.
+ */
 public class LoginController {
 
     private UsuarioDAO usuarioDAO;
 
+    /**
+     * Crea el controlador e inicializa el acceso a los datos de usuarios.
+     */
     public LoginController() {
         usuarioDAO = new UsuarioDAO();
     }
 
+    /**
+     * Valida las credenciales e intenta iniciar una sesión.
+     *
+     * @param nombreAlias alias del usuario
+     * @param contrasena contraseña del usuario
+     * @return resultado de la autenticación, con su estado y, si corresponde,
+     *         los datos del usuario autenticado
+     */
     public ResultadoLogin iniciarSesion(String nombreAlias, String contrasena) {
 
         if (nombreAlias == null || nombreAlias.trim().isEmpty()
