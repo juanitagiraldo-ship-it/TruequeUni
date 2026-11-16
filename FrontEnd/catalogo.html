@@ -94,7 +94,9 @@
 
                     const descripcion = document.createElement("div");
                     descripcion.className = "info-usuario";
-                    descripcion.textContent = publicacion.descripcion || "";
+                    descripcion.textContent = publicacion.descripcion
+                        ? "Descripción y contacto: " + publicacion.descripcion
+                        : "Sin descripción ni contacto.";
 
                     const usuario = document.createElement("div");
                     usuario.className = "info-usuario";
@@ -109,12 +111,6 @@
                     oferta.className = "info-usuario";
                     oferta.textContent = "Oferta: " + publicacion.tipoOferta;
 
-                    const contacto = document.createElement("a");
-                    contacto.href = "chat.html";
-                    contacto.textContent = "Contactar";
-                    contacto.style.cssText =
-                        "display:block;text-align:center;background-color:#000;color:white;padding:8px;text-decoration:none;margin-top:10px;";
-
                     tarjeta.append(
                         imagen,
                         estado,
@@ -122,8 +118,7 @@
                         descripcion,
                         usuario,
                         categoria,
-                        oferta,
-                        contacto
+                        oferta
                     );
 
                     contenedor.appendChild(tarjeta);

@@ -38,7 +38,7 @@
     </header>
 
     <h2>Mis publicaciones</h2>
-    <p>El estado es de solo lectura. El botón Eliminar cambia la publicación a inactiva; no la borra de la base de datos.</p>
+
     <table>
         <thead>
             <tr>
@@ -121,7 +121,8 @@
                 "Categoría: " + publicacion.categoria,
                 "Estado físico: " + publicacion.estadoFisico,
                 "Tipo de oferta: " + publicacion.tipoOferta,
-                "Descripción: " + (publicacion.descripcion || "Sin descripción")
+                "Descripción y contacto: "
+                    + (publicacion.descripcion || "Sin descripción ni contacto")
             ].forEach(texto => {
                 const parrafo = document.createElement("p");
                 parrafo.textContent = texto;
@@ -151,7 +152,8 @@
             const campoTipoOferta = crearCampo(
                 "Tipo de oferta", "select", publicacion.tipoOferta, tiposOferta);
             const campoDescripcion = crearCampo(
-                "Descripción", "textarea", publicacion.descripcion || "");
+                "Descripción y contacto", "textarea",
+                publicacion.descripcion || "");
             const campoImagen = crearCampo("Cambiar imagen", "file");
             campoImagen.control.accept = "image/png,image/jpeg,image/gif";
             const labelEliminarImagen = document.createElement("label");
