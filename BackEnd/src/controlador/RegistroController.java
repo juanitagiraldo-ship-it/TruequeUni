@@ -5,14 +5,27 @@ import dao.UsuarioDAO;
 import modelo.Usuario;
 import modelo.ResultadoRegistro;
 
+/**
+ * Coordina el registro de nuevos usuarios.
+ */
 public class RegistroController {
 
     private UsuarioDAO usuarioDAO;
 
+    /**
+     * Crea el controlador e inicializa el acceso a los datos de usuarios.
+     */
     public RegistroController() {
         usuarioDAO = new UsuarioDAO();
     }
 
+    /**
+     * Valida los datos y registra un usuario nuevo.
+     *
+     * @param nombre nombre o alias del usuario
+     * @param contrasena contraseña elegida por el usuario
+     * @return resultado del registro, con el estado y un mensaje descriptivo
+     */
     public ResultadoRegistro registrarUsuario(String nombre, String contrasena) {
 
         if (nombre == null || nombre.trim().isEmpty()
