@@ -11,9 +11,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+/**
+ * Accede a los datos de las publicaciones.
+ */
 public class PublicacionDAO {
 
-    // Metodo para consultar las publicaciones activas
+    /**
+     * Consulta las publicaciones activas, ordenadas de la más reciente a la
+     * más antigua, junto con los datos asociados de usuario y categoría.
+     *
+     * @return lista de publicaciones activas; puede estar vacía si no hay
+     *         resultados o si no se puede completar la consulta
+     */
     public ArrayList<Publicacion> consultarPublicaciones() {
 
         ArrayList<Publicacion> publicaciones = new ArrayList<>();
