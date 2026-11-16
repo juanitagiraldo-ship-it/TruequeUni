@@ -11,9 +11,18 @@ import java.sql.Date;
 import java.util.ArrayList;
 import conexion.Conexion;
 
+/**
+ * Gestiona el registro y la consulta de publicaciones.
+ */
 public class PublicacionController {
 
-    // Metodo para registrar una publicacion
+    /**
+     * Registra una publicación en la base de datos.
+     *
+     * @param publicacion publicación que se va a guardar
+     * @return {@code true} si se registró correctamente; {@code false} si ocurrió
+     *         un error al guardar
+     */
     public boolean registrarPublicacion(Publicacion publicacion) {
 
         String sql = "INSERT INTO publicaciones (titulo, descripcion, estado_fisico, estado_publicacion, tipo_oferta, imagen, fecha_publicacion, id_usuario, id_categoria) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -48,7 +57,12 @@ public class PublicacionController {
         }
     }
 
-    // Metodo para consultar todas las publicaciones
+    /**
+     * Consulta las publicaciones almacenadas en la base de datos.
+     *
+     * @return lista de publicaciones consultadas; puede estar vacía si no hay
+     *         publicaciones o si ocurre un error durante la consulta
+     */
     public ArrayList<Publicacion> consultarPublicaciones() {
 
         ArrayList<Publicacion> publicaciones = new ArrayList<>();
