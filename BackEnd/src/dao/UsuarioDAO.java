@@ -50,6 +50,106 @@ public class UsuarioDAO {
     }
 
     /**
+     * Obtiene un usuario por su identificador.
+     */
+    public ResultadoConsultaUsuario obtenerPorId(int idUsuario) {
+        String sql = "SELECT id_usuario, nombre_alias, programa, rol, reputacion "
+                   + "FROM usuarios WHERE id_usuario = ?";
+
+        try (Connection conexion = Conexion.conectar()) {
+            if (conexion == null) {
+                return new ResultadoConsultaUsuario(
+                        ResultadoConsultaUsuario.Estado.ERROR, null);
+            }
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setInt(1, idUsuario);
+                try (ResultSet resultado = consulta.executeQuery()) {
+                    if (!resultado.next()) {
+                        return new ResultadoConsultaUsuario(
+                                ResultadoConsultaUsuario.Estado.NO_ENCONTRADO,
+                                null);
+                    }
+
+                    Usuario usuario = new Usuario(
+                            resultado.getInt("id_usuario"),
+                            resultado.getString("nombre_alias"),
+                            "",
+                            resultado.getString("programa"),
+                            resultado.getString("rol"),
+                            resultado.getDouble("reputacion"));
+                    return new ResultadoConsultaUsuario(
+                            ResultadoConsultaUsuario.Estado.ENCONTRADO,
+                            usuario);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al consultar el perfil: " + e.getMessage());
+            return new ResultadoConsultaUsuario(
+                    ResultadoConsultaUsuario.Estado.ERROR, null);
+        }
+    }
+
+    /**
+     * Actualiza los campos editables del perfil, sin modificar ID ni reputación.
+     *
+     * @return 1 si se actualizó o no había cambios, 0 si no existe el usuario,
+     *         o -1 si ocurrió un error
+     */
+    public int actualizarPerfil(
+            int idUsuario,
+            String nombreAlias,
+            String programa,
+            String rol,
+            String nuevaContrasena) {
+
+        boolean cambiarContrasena = nuevaContrasena != null
+                && !nuevaContrasena.isEmpty();
+        String sql = cambiarContrasena
+                ? "UPDATE usuarios SET nombre_alias = ?, programa = ?, rol = ?, "
+                    + "contrasena = ? WHERE id_usuario = ?"
+                : "UPDATE usuarios SET nombre_alias = ?, programa = ?, rol = ? "
+                    + "WHERE id_usuario = ?";
+
+        try (Connection conexion = Conexion.conectar()) {
+            if (conexion == null) {
+                return -1;
+            }
+
+            try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+                consulta.setString(1, nombreAlias);
+                consulta.setString(2, programa);
+                consulta.setString(3, rol);
+                if (cambiarContrasena) {
+                    consulta.setString(4, nuevaContrasena);
+                    consulta.setInt(5, idUsuario);
+                } else {
+                    consulta.setInt(4, idUsuario);
+                }
+
+                if (consulta.executeUpdate() > 0) {
+                    return 1;
+                }
+                return existeUsuario(conexion, idUsuario) ? 1 : 0;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar el perfil: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    private boolean existeUsuario(Connection conexion, int idUsuario)
+            throws SQLException {
+        String sql = "SELECT 1 FROM usuarios WHERE id_usuario = ?";
+        try (PreparedStatement consulta = conexion.prepareStatement(sql)) {
+            consulta.setInt(1, idUsuario);
+            try (ResultSet resultado = consulta.executeQuery()) {
+                return resultado.next();
+            }
+        }
+    }
+
+    /**
      * Busca un usuario que coincida con el alias y la contraseña indicados.
      *
      * @param nombreAlias alias del usuario

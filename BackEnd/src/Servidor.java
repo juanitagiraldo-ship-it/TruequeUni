@@ -6,6 +6,7 @@ import modelo.Usuario;
 import modelo.ResultadoLogin;
 import modelo.ResultadoRegistro;
 import modelo.ResultadoPublicacion;
+import modelo.ResultadoPerfil;
 import modelo.Publicacion;
 import modelo.Categoria;
 import sesion.SesionManager;
@@ -14,6 +15,7 @@ import controlador.LoginController;
 import controlador.RegistroController;
 import controlador.CatalogoController;
 import controlador.PublicacionController;
+import controlador.PerfilController;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -33,6 +35,7 @@ public class Servidor {
     private static final SesionManager sesionManager = new SesionManager();
     private static final int MAX_IMAGEN_BYTES = 5 * 1024 * 1024;
     private static final int MAX_SOLICITUD_PUBLICACION_BYTES = 16 * 1024 * 1024;
+    private static final int MAX_SOLICITUD_PERFIL_BYTES = 16 * 1024;
     private static final Path DIRECTORIO_IMAGENES = Path.of(
             System.getProperty("java.io.tmpdir"),
             "truequeuni-uploads"
@@ -75,6 +78,10 @@ public class Servidor {
 
             servidor.createContext("/api/mis-publicaciones", intercambio -> {
                 consultarMisPublicaciones(intercambio);
+            });
+
+            servidor.createContext("/api/perfil", intercambio -> {
+                gestionarPerfil(intercambio);
             });
 
             servidor.createContext("/api/sesion", intercambio -> {
@@ -163,12 +170,14 @@ public class Servidor {
 
             String nombre = formulario.get("nombre");
             String contrasena = formulario.get("contrasena");
+            String programa = formulario.get("programa");
+            String rol = formulario.get("rol");
 
            
             RegistroController registroController = new RegistroController();
 
             ResultadoRegistro resultado = registroController.registrarUsuario(
-                    nombre, contrasena
+                    nombre, contrasena, programa, rol
             );
 
             if (resultado.getEstado() == ResultadoRegistro.Estado.EXITOSO) {
@@ -787,6 +796,101 @@ private static void iniciarSesion(HttpExchange intercambio)
 
         intercambio.sendResponseHeaders(200, respuesta.length);
 
+        try (OutputStream salida = intercambio.getResponseBody()) {
+            salida.write(respuesta);
+        }
+    }
+
+    private static void gestionarPerfil(HttpExchange intercambio)
+            throws IOException {
+        if (!intercambio.getRequestURI().getPath().equals("/api/perfil")) {
+            responder(intercambio, 404, "Ruta no encontrada");
+            return;
+        }
+
+        Usuario usuarioSesion = obtenerUsuarioSesion(intercambio);
+        if (usuarioSesion == null) {
+            responder(intercambio, 401, "Debes iniciar sesion.");
+            return;
+        }
+
+        PerfilController perfilController = new PerfilController();
+        if (intercambio.getRequestMethod().equalsIgnoreCase("GET")) {
+            ResultadoPerfil resultado = perfilController.consultarPerfil(
+                    usuarioSesion.getIdUsuario());
+            responderPerfil(intercambio, resultado);
+            return;
+        }
+
+        if (!intercambio.getRequestMethod().equalsIgnoreCase("PATCH")) {
+            responder(intercambio, 405, "Metodo no permitido");
+            return;
+        }
+
+        String tipoContenido =
+                intercambio.getRequestHeaders().getFirst("Content-Type");
+        if (tipoContenido == null
+                || !tipoContenido.toLowerCase().startsWith(
+                        "application/x-www-form-urlencoded")) {
+            responder(intercambio, 415, "Formato de formulario no soportado.");
+            return;
+        }
+
+        try {
+            Map<String, String> formulario = obtenerDatosFormulario(
+                    intercambio, MAX_SOLICITUD_PERFIL_BYTES);
+            ResultadoPerfil resultado = perfilController.actualizarPerfil(
+                    usuarioSesion,
+                    formulario.get("nombreAlias"),
+                    formulario.get("programa"),
+                    formulario.get("rol"),
+                    formulario.get("nuevaContrasena"));
+
+            if (resultado.getEstado() == ResultadoPerfil.Estado.EXITOSO) {
+                Usuario actualizado = resultado.getUsuario();
+                usuarioSesion.setNombreAlias(actualizado.getNombreAlias());
+                usuarioSesion.setPrograma(actualizado.getPrograma());
+                usuarioSesion.setRol(actualizado.getRol());
+                String nuevaContrasena = formulario.get("nuevaContrasena");
+                if (nuevaContrasena != null && !nuevaContrasena.isEmpty()) {
+                    usuarioSesion.setContrasena(nuevaContrasena);
+                }
+            }
+            responderPerfil(intercambio, resultado);
+        } catch (SolicitudDemasiadoGrandeException e) {
+            responder(intercambio, 413, "La solicitud supera el tamaño permitido.");
+        }
+    }
+
+    private static void responderPerfil(
+            HttpExchange intercambio, ResultadoPerfil resultado)
+            throws IOException {
+        if (resultado.getEstado() != ResultadoPerfil.Estado.EXITOSO) {
+            int codigo = resultado.getEstado()
+                    == ResultadoPerfil.Estado.DATOS_INVALIDOS ? 400
+                    : resultado.getEstado()
+                            == ResultadoPerfil.Estado.NO_ENCONTRADO ? 404 : 500;
+            responder(intercambio, codigo, resultado.getMensaje());
+            return;
+        }
+
+        if (intercambio.getRequestMethod().equalsIgnoreCase("PATCH")) {
+            responder(intercambio, 200, resultado.getMensaje());
+            return;
+        }
+
+        Usuario usuario = resultado.getUsuario();
+        String json = "{"
+                + "\"idUsuario\":" + usuario.getIdUsuario() + ","
+                + "\"nombreAlias\":\"" + escaparJSON(usuario.getNombreAlias()) + "\","
+                + "\"programa\":\"" + escaparJSON(usuario.getPrograma()) + "\","
+                + "\"rol\":\"" + escaparJSON(usuario.getRol()) + "\","
+                + "\"reputacion\":" + usuario.getReputacion()
+                + "}";
+        byte[] respuesta = json.getBytes(StandardCharsets.UTF_8);
+        intercambio.getResponseHeaders().set(
+                "Content-Type", "application/json; charset=UTF-8");
+        intercambio.sendResponseHeaders(200, respuesta.length);
         try (OutputStream salida = intercambio.getResponseBody()) {
             salida.write(respuesta);
         }

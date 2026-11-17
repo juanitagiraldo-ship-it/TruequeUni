@@ -10,6 +10,11 @@
         .tarjeta-perfil { background-color: white; border: 1px solid #ccc; padding: 20px; display: flex; align-items: center; }
         .foto-perfil { width: 80px; height: 80px; background-color: #004d40; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-right: 20px; }
         .historial { background-color: white; border: 1px solid #ccc; padding: 20px; margin-top: 20px; }
+        .formulario-perfil { background-color: white; border: 1px solid #ccc; padding: 20px; margin-top: 20px; max-width: 600px; }
+        .formulario-perfil label { display: block; margin-top: 15px; color: #004d40; font-weight: bold; }
+        .formulario-perfil input, .formulario-perfil select { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; }
+        .formulario-perfil button { background-color: #004d40; color: white; border: none; padding: 10px 16px; margin-top: 20px; cursor: pointer; }
+        #mensaje { min-height: 1.2em; }
     </style>
 </head>
 <body>
@@ -18,17 +23,128 @@
     </header>
 
     <div class="tarjeta-perfil">
-        <div class="foto-perfil">AG</div>
+        <div class="foto-perfil" id="iniciales">--</div>
         <div>
-            <h2>Alexandra Giraldo</h2>
-            <p>Estudiante de Ingeniería de Sistemas</p>
-            <p><strong>Reputación:</strong> 4.9 </p>
+            <h2 id="nombrePerfil">Cargando perfil...</h2>
+            <p><strong>ID:</strong> <span id="idPerfil">-</span></p>
+            <p><strong>Reputación:</strong> <span id="reputacionPerfil">-</span></p>
         </div>
+    </div>
+
+    <div class="formulario-perfil">
+        <h3>Información personal</h3>
+        <form id="formularioPerfil">
+            <label for="nombreAlias">Nombre o alias:</label>
+            <input type="text" id="nombreAlias" maxlength="100" required>
+
+            <label for="programa">Programa académico:</label>
+            <select id="programa" required>
+                <option value="" disabled>Selecciona tu programa...</option>
+                <option value="Administración de Empresas">Administración de Empresas</option>
+                <option value="Ciencia Política, Gobierno y Relaciones Internacionales">Ciencia Política, Gobierno y Relaciones Internacionales</option>
+                <option value="Economía">Economía</option>
+                <option value="Negocios Internacionales">Negocios Internacionales</option>
+                <option value="Diseño Industrial">Diseño Industrial</option>
+                <option value="Diseño de Modas">Diseño de Modas</option>
+                <option value="Ingeniería Biomédica">Ingeniería Biomédica</option>
+                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
+                <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+                <option value="Fisioterapia">Fisioterapia</option>
+                <option value="Odontología">Odontología</option>
+                <option value="Artes Culinarias y Gastronomía">Artes Culinarias y Gastronomía</option>
+            </select>
+
+            <label for="rol">Rol:</label>
+            <select id="rol" required>
+                <option value="estudiante">Estudiante</option>
+                <option value="docente">Docente</option>
+            </select>
+
+            <label for="nuevaContrasena">Nueva contraseña (opcional):</label>
+            <input type="password" id="nuevaContrasena" maxlength="255"
+                   autocomplete="new-password"
+                   placeholder="Déjala vacía para conservar la actual">
+
+            <button type="submit">Guardar cambios</button>
+        </form>
+        <p id="mensaje" role="status"></p>
     </div>
 
     <div class="historial">
         <h3>Historial de Trueques</h3>
         <p>Libro de Cálculo - Completado el 12 de Septiembre</p>
     </div>
+    <script>
+        const formulario = document.getElementById("formularioPerfil");
+        const mensaje = document.getElementById("mensaje");
+
+        async function cargarPerfil() {
+            try {
+                const respuesta = await fetch("/api/perfil");
+                if (!respuesta.ok) {
+                    throw new Error(await respuesta.text());
+                }
+
+                const usuario = await respuesta.json();
+                document.getElementById("nombreAlias").value = usuario.nombreAlias;
+                document.getElementById("programa").value = usuario.programa;
+                document.getElementById("rol").value = usuario.rol;
+                document.getElementById("nombrePerfil").textContent =
+                    usuario.nombreAlias;
+                document.getElementById("idPerfil").textContent =
+                    usuario.idUsuario;
+                document.getElementById("reputacionPerfil").textContent =
+                    usuario.reputacion;
+                document.getElementById("iniciales").textContent =
+                    usuario.nombreAlias.trim().slice(0, 2).toUpperCase();
+            } catch (error) {
+                mensaje.style.color = "red";
+                mensaje.textContent = error.message
+                    || "No se pudo cargar el perfil.";
+            }
+        }
+
+        formulario.addEventListener("submit", async event => {
+            event.preventDefault();
+            mensaje.textContent = "";
+
+            try {
+                const respuesta = await fetch("/api/perfil", {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: new URLSearchParams({
+                        nombreAlias: document.getElementById("nombreAlias").value.trim(),
+                        programa: document.getElementById("programa").value,
+                        rol: document.getElementById("rol").value,
+                        nuevaContrasena:
+                            document.getElementById("nuevaContrasena").value
+                    })
+                });
+                const resultado = await respuesta.text();
+                if (!respuesta.ok) {
+                    throw new Error(resultado || "No se pudo actualizar el perfil.");
+                }
+
+                document.getElementById("nombrePerfil").textContent =
+                    document.getElementById("nombreAlias").value.trim();
+                document.getElementById("iniciales").textContent =
+                    document.getElementById("nombreAlias").value.trim()
+                        .slice(0, 2).toUpperCase();
+                document.getElementById("nuevaContrasena").value = "";
+                mensaje.style.color = "green";
+                mensaje.textContent = resultado;
+            } catch (error) {
+                mensaje.style.color = "red";
+                mensaje.textContent = error.message
+                    || "No se pudo actualizar el perfil.";
+            }
+        });
+
+        cargarPerfil();
+    </script>
 </body>
 </html>

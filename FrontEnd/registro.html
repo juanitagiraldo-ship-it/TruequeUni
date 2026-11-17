@@ -9,7 +9,7 @@
         .contenedor-form { background-color: white; padding: 30px; max-width: 400px; margin: 0 auto; border: 1px solid #035c193c; }
         h2 { text-align: center; color: #004d40; }
         label { display: block; margin-top: 15px; color: #555; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; box-sizing: border-box; }
         button { width: 100%; padding: 10px; background-color: #004d40; color: white; border: none; margin-top: 20px; cursor: pointer; font-size: 16px; }
         #mensaje { text-align: center; margin-top: 15px; }
     </style>
@@ -20,10 +20,37 @@
 
         <form id="formRegistro">
             <label>Nombre o Alias:</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Ej: JuanP22">
+            <input type="text" id="nombre" name="nombre"
+                   placeholder="Ej: JuanP22" maxlength="100" required>
 
             <label>Contraseña:</label>
-            <input type="password" id="contrasena" name="contrasena" placeholder="********">
+            <input type="password" id="contrasena" name="contrasena"
+                   placeholder="********" required>
+
+            <label>Programa académico:</label>
+            <select id="programa" name="programa" required>
+                <option value="" selected disabled>Selecciona tu programa...</option>
+                <option value="Administración de Empresas">Administración de Empresas</option>
+                <option value="Ciencia Política, Gobierno y Relaciones Internacionales">Ciencia Política, Gobierno y Relaciones Internacionales</option>
+                <option value="Economía">Economía</option>
+                <option value="Negocios Internacionales">Negocios Internacionales</option>
+                <option value="Diseño Industrial">Diseño Industrial</option>
+                <option value="Diseño de Modas">Diseño de Modas</option>
+                <option value="Ingeniería Biomédica">Ingeniería Biomédica</option>
+                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
+                <option value="Ingeniería Mecánica">Ingeniería Mecánica</option>
+                <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+                <option value="Fisioterapia">Fisioterapia</option>
+                <option value="Odontología">Odontología</option>
+                <option value="Artes Culinarias y Gastronomía">Artes Culinarias y Gastronomía</option>
+            </select>
+
+            <label>Rol:</label>
+            <select id="rol" name="rol" required>
+                <option value="estudiante" selected>Estudiante</option>
+                <option value="docente">Docente</option>
+            </select>
 
             <button type="submit">Registrarse</button>
         </form>
@@ -37,6 +64,8 @@
 
             const nombre = document.getElementById("nombre").value.trim();
             const contrasena = document.getElementById("contrasena").value;
+            const programa = document.getElementById("programa").value;
+            const rol = document.getElementById("rol").value;
             const mensaje = document.getElementById("mensaje");
 
             try {
@@ -47,7 +76,9 @@
                     },
                     body: new URLSearchParams({
                         nombre: nombre,
-                        contrasena: contrasena
+                        contrasena: contrasena,
+                        programa: programa,
+                        rol: rol
                     })
                 });
 
