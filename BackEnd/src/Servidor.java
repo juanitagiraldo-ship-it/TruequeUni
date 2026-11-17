@@ -30,17 +30,50 @@ import java.util.UUID;
 
 import java.util.ArrayList;
 
-
+/**
+ * Punto de entrada del servidor HTTP de TruequeUni.
+ * <p>
+ * Expone las rutas para las paginas del frontend y las operaciones REST de
+ * usuarios, publicaciones, catalogo y perfil.
+ * </p>
+ *
+ * @author TruequeUni
+ * @version 1.0
+ */
 public class Servidor {
+    /**
+     * Administrador de las sesiones activas.
+     */
     private static final SesionManager sesionManager = new SesionManager();
+
+    /**
+     * Tamaño maximo permitido para una imagen, en bytes.
+     */
     private static final int MAX_IMAGEN_BYTES = 5 * 1024 * 1024;
+
+    /**
+     * Tamaño maximo permitido para una solicitud de publicacion, en bytes.
+     */
     private static final int MAX_SOLICITUD_PUBLICACION_BYTES = 16 * 1024 * 1024;
+
+    /**
+     * Tamaño maximo permitido para una solicitud de perfil, en bytes.
+     */
     private static final int MAX_SOLICITUD_PERFIL_BYTES = 16 * 1024;
+
+    /**
+     * Directorio temporal donde se almacenan las imagenes cargadas.
+     */
     private static final Path DIRECTORIO_IMAGENES = Path.of(
             System.getProperty("java.io.tmpdir"),
             "truequeuni-uploads"
     ).toAbsolutePath().normalize();
 
+    /**
+     * Inicia el servidor HTTP en el puerto {@code 8080} y registra sus rutas.
+     *
+     * @param args argumentos recibidos al ejecutar la aplicacion
+     */
     public static void main(String[] args) {
 
         try {
@@ -113,7 +146,12 @@ public class Servidor {
         
     }
 
-    // Metodo para mostrar archivos HTML
+    /**
+     * Sirve una pagina o recurso estatico del frontend.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al leer o enviar el recurso
+     */
     private static void mostrarPagina(HttpExchange intercambio)
             throws IOException {
 
@@ -156,7 +194,12 @@ public class Servidor {
         }
     }
 
-  // Metodo para registrar usuarios
+    /**
+     * Procesa el registro de un usuario desde el formulario.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al responder al cliente
+     */
     private static void registrarUsuario(HttpExchange intercambio)
             throws IOException {
 
@@ -203,7 +246,12 @@ public class Servidor {
     
     
   
-// Metodo para iniciar sesion
+/**
+ * Procesa el inicio de sesion y crea una cookie con el token de sesion.
+ *
+ * @param intercambio intercambio HTTP asociado a la solicitud
+ * @throws IOException si ocurre un error al responder al cliente
+ */
 private static void iniciarSesion(HttpExchange intercambio)
         throws IOException {
 
@@ -258,7 +306,13 @@ private static void iniciarSesion(HttpExchange intercambio)
 
 
 
-    // Metodo para obtener los datos enviados por los formularios
+    /**
+     * Lee los datos enviados por un formulario sin limitar previamente su tamaño.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @return mapa con las claves y valores enviados en el formulario
+     * @throws IOException si ocurre un error al leer la solicitud
+     */
     private static Map<String, String> obtenerDatosFormulario(
             HttpExchange intercambio) throws IOException {
 
@@ -270,6 +324,14 @@ private static void iniciarSesion(HttpExchange intercambio)
         return analizarDatosFormulario(datos);
     }
 
+    /**
+     * Lee los datos de un formulario y rechaza solicitudes que excedan el limite.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param maximoBytes tamaño maximo permitido para el cuerpo
+     * @return mapa con las claves y valores enviados en el formulario
+     * @throws IOException si ocurre un error al leer la solicitud
+     */
     private static Map<String, String> obtenerDatosFormulario(
             HttpExchange intercambio, int maximoBytes) throws IOException {
 
@@ -282,6 +344,13 @@ private static void iniciarSesion(HttpExchange intercambio)
                 new String(datos, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Convierte una cadena codificada como formulario en pares clave-valor.
+     *
+     * @param datos contenido codificado con el formato
+     *              {@code application/x-www-form-urlencoded}
+     * @return mapa con los campos del formulario
+     */
     private static Map<String, String> analizarDatosFormulario(String datos) {
         Map<String, String> formulario = new HashMap<>();
 
@@ -305,11 +374,21 @@ private static void iniciarSesion(HttpExchange intercambio)
         return formulario;
     }
 
+    /**
+     * Indica que el cuerpo de una solicitud excedio el tamaño permitido.
+     */
     private static class SolicitudDemasiadoGrandeException extends IOException {
         private static final long serialVersionUID = 1L;
     }
 
-    // Metodo para enviar respuestas al frontend
+    /**
+     * Envia una respuesta de texto al cliente.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param codigo codigo de estado HTTP
+     * @param mensaje contenido de texto de la respuesta
+     * @throws IOException si ocurre un error al enviar la respuesta
+     */
     private static void responder(
             HttpExchange intercambio, int codigo, String mensaje)
             throws IOException {
@@ -326,8 +405,12 @@ private static void iniciarSesion(HttpExchange intercambio)
             salida.write(respuesta);
         }
     }
-        // Metodo para obtener el usuario que inicio sesion
-    
+    /**
+     * Recupera el usuario asociado a la cookie de sesion de la solicitud.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @return usuario autenticado, o {@code null} si no existe una sesion valida
+     */
     private static Usuario obtenerUsuarioSesion(HttpExchange intercambio) {
 
         String cookies = intercambio.getRequestHeaders().getFirst("Cookie");
@@ -351,6 +434,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         return null;
     }
 
+    /**
+     * Gestiona el alta, actualizacion o desactivacion de publicaciones.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al procesar o responder
+     */
     private static void registrarPublicacion(HttpExchange intercambio)
             throws IOException {
 
@@ -454,6 +543,13 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Actualiza una publicacion existente propiedad del usuario autenticado.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param idPublicacion identificador de la publicacion
+     * @throws IOException si ocurre un error al procesar o responder
+     */
     private static void actualizarPublicacion(
             HttpExchange intercambio, int idPublicacion) throws IOException {
         Usuario usuario = obtenerUsuarioSesion(intercambio);
@@ -518,6 +614,13 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Marca una publicacion como inactiva.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param idPublicacion identificador de la publicacion
+     * @throws IOException si ocurre un error al responder
+     */
     private static void desactivarPublicacion(
             HttpExchange intercambio, int idPublicacion) throws IOException {
         Usuario usuario = obtenerUsuarioSesion(intercambio);
@@ -531,6 +634,14 @@ private static void iniciarSesion(HttpExchange intercambio)
         responderResultadoPublicacion(intercambio, resultado, null);
     }
 
+    /**
+     * Convierte el resultado de una operacion sobre publicaciones en una respuesta HTTP.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param resultado resultado devuelto por el controlador
+     * @param rutaImagen ruta temporal de una imagen que debe eliminarse si falla
+     * @throws IOException si ocurre un error al responder
+     */
     private static void responderResultadoPublicacion(
             HttpExchange intercambio,
             ResultadoPublicacion resultado,
@@ -548,6 +659,15 @@ private static void iniciarSesion(HttpExchange intercambio)
         responder(intercambio, codigo, resultado.getMensaje());
     }
 
+    /**
+     * Valida una imagen codificada en Base64 y la guarda temporalmente.
+     *
+     * @param imagenBase64 contenido de la imagen en formato Base64
+     * @param tipoImagen tipo MIME declarado por el cliente
+     * @return ruta publica de la imagen guardada, o {@code null} si no se envio
+     * @throws IOException si ocurre un error al crear el archivo
+     * @throws IllegalArgumentException si el formato o tamaño no son validos
+     */
     private static String guardarImagenTemporal(
             String imagenBase64, String tipoImagen) throws IOException {
 
@@ -587,6 +707,14 @@ private static void iniciarSesion(HttpExchange intercambio)
         return "/uploads/" + nombreArchivo;
     }
 
+    /**
+     * Determina la extension de una imagen examinando su tipo y contenido.
+     *
+     * @param tipoImagen tipo MIME declarado por el cliente
+     * @param contenido bytes de la imagen
+     * @return extension correspondiente al formato reconocido
+     * @throws IllegalArgumentException si el formato no es PNG, JPEG o GIF valido
+     */
     private static String obtenerExtensionImagen(
             String tipoImagen, byte[] contenido) {
 
@@ -625,6 +753,11 @@ private static void iniciarSesion(HttpExchange intercambio)
                 "La imagen debe ser un archivo PNG, JPEG o GIF valido.");
     }
 
+    /**
+     * Elimina una imagen temporal si la ruta tiene un formato seguro.
+     *
+     * @param rutaImagen ruta publica de la imagen
+     */
     private static void eliminarImagenTemporal(String rutaImagen) {
         if (rutaImagen == null || !rutaImagen.startsWith("/uploads/")) {
             return;
@@ -645,6 +778,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Sirve una imagen previamente cargada por nombre de archivo.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al leer o enviar la imagen
+     */
     private static void mostrarImagen(HttpExchange intercambio)
             throws IOException {
 
@@ -679,6 +818,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Devuelve en formato JSON las publicaciones del usuario autenticado.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al consultar o responder
+     */
     private static void consultarMisPublicaciones(HttpExchange intercambio)
             throws IOException {
 
@@ -742,6 +887,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Consulta el catalogo y devuelve las publicaciones publicadas en JSON.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al consultar o responder
+     */
     private static void consultarCatalogo(HttpExchange intercambio)
             throws IOException {
 
@@ -801,6 +952,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Consulta o actualiza el perfil del usuario autenticado.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @throws IOException si ocurre un error al procesar o responder
+     */
     private static void gestionarPerfil(HttpExchange intercambio)
             throws IOException {
         if (!intercambio.getRequestURI().getPath().equals("/api/perfil")) {
@@ -862,6 +1019,13 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Construye la respuesta HTTP correspondiente al resultado de perfil.
+     *
+     * @param intercambio intercambio HTTP asociado a la solicitud
+     * @param resultado resultado devuelto por el controlador de perfil
+     * @throws IOException si ocurre un error al responder
+     */
     private static void responderPerfil(
             HttpExchange intercambio, ResultadoPerfil resultado)
             throws IOException {
@@ -896,6 +1060,12 @@ private static void iniciarSesion(HttpExchange intercambio)
         }
     }
 
+    /**
+     * Escapa los caracteres especiales necesarios para insertar texto en JSON.
+     *
+     * @param texto texto que sera utilizado dentro de una cadena JSON
+     * @return texto escapado, o una cadena vacia si el texto es {@code null}
+     */
     private static String escaparJSON(String texto) {
 
         if (texto == null) {
